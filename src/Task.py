@@ -1,8 +1,25 @@
 from dataclasses import dataclass, field
 
-from geoms import Point, Poly
+from Geom import Point, Poly
 from typing import Dict, List, Optional, Union
 import requests
+from pathlib import Path
+
+
+class PendingTaskError(Exception):
+    """Raised when download is attempted on running task."""
+
+    def __init__(self, message="Task still running. Try downloading again later."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class InvalidRequestError(Exception):
+    """Raised when request response isn't 200."""
+
+    def __init__(self, message="Invalid Request."):
+        self.message = message
+        super().__init__(self.message)
 
 
 @dataclass
@@ -64,10 +81,13 @@ class Task:
         )
 
         task_response = response.json()
+        if response.status_code != 202:
+            raise InvalidRequestError(message=task_response['message'])
         self.task_id = task_response["task_id"]
         self.status = task_response["status"]
 
-    def status_update(self, token):
+    def status_update(self, token: str) -> str:
+        # TODO: Adjust this to work when task is running. 
         response = requests.get(
             "https://appeears.earthdatacloud.nasa.gov/api/status/{0}".format(
                 self.task_id
@@ -76,3 +96,41 @@ class Task:
         )
         status_response = response.json()
         self.status = status_response["status"]
+        return self.status
+
+    def _write_file(self, f: Union[Path, str], dirname: Union[Path, str], token: str):
+        response = requests.get(
+            "https://appeears.earthdatacloud.nasa.gov/api/bundle/{0}/{1}".format(
+                self.task_id, f["file_id"]
+            ),
+            headers={"Authorization": "Bearer {0}".format(token)},
+            allow_redirects=True,
+            stream=True,
+        )
+
+        pth = Path(dirname) / f["file_name"]
+        pth.touch()
+        with open(pth, "wb") as con:
+            for data in response.iter_content(chunk_size=8192):
+                con.write(data)
+
+    def download(self, dirname, token, download_all=False):
+        if self.status_update(token) != "done":
+            raise PendingTaskError()
+
+        response = requests.get(
+            "https://appeears.earthdatacloud.nasa.gov/api/bundle/{0}".format(
+                self.task_id
+            ),
+            headers={"Authorization": "Bearer {0}".format(token)},
+        )
+
+        bundle_response = response.json()
+
+        if download_all:
+            for f in bundle_response["files"]:
+                self._write_file(f, dirname, token)
+        else:
+            f_list = [x for x in bundle_response["files"] if x["file_type"] == "csv"]
+            for f in f_list:
+                self._write_file(f, dirname, token)

@@ -11,11 +11,9 @@ class Session:
     password: Optional[str] = None
     creds: Dict[str, str] = field(init=False)
     token: str = field(init=False)
-    pending_tasks: List[str] = field(init=False)
-    completed_tasks: List[str] = field(init=False)
 
     def __post_init__(self):
-        self.creds = self._login()
+        self.creds = self._login(self.username, self.password)
         self.token = self.creds["token"]
 
     @staticmethod
@@ -61,10 +59,10 @@ class Session:
         creds = response.json()
         return creds
 
-    def logout(token):
+    def logout(self):
         response = requests.post(
             "https://appeears.earthdatacloud.nasa.gov/api/logout",
-            headers={"Authorization": "Bearer {0}".format(token)},
+            headers={"Authorization": "Bearer {0}".format(self.token)},
         )
 
         assert (

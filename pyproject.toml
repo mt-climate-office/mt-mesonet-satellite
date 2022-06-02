@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mt-mesonet-satellite"
+name = "py-appeears"
 version = "0.1.0"
 description = ""
 authors = ["Colin Brust <colin.brust@mso.umt.edu>"]

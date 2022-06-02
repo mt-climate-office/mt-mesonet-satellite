@@ -37,4 +37,5 @@ class Point:
 
 @dataclass
 class Poly:
-    raise NotImplementedError("This class is not implemented yet")
+    pass
+    # raise NotImplementedError("This class is not implemented yet")

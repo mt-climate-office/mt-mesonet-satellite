@@ -1,2 +1,2 @@
-# mt-mesonet-satellite
-Library for Extracting Satellite Data at Montana Mesonet Stations
+# py-appeears
+Python wrappers for the [AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/?python). 
