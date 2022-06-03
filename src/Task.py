@@ -94,7 +94,10 @@ class Task:
             ),
             headers={"Authorization": "Bearer {0}".format(token)},
         )
+
         status_response = response.json()
+        if response.status_code == 200 and "status" not in status_response:
+            return "pending"
         self.status = status_response["status"]
         return self.status
 

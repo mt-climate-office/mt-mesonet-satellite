@@ -30,7 +30,7 @@ class Point:
         dat = gpd.read_file(pth)
         return cls(
             lats=dat.geometry.y.tolist(),
-            lons=dat.geometry.tolist(),
+            lons=dat.geometry.x.tolist(),
             ids=dat[id_col].tolist(),
         )
 
