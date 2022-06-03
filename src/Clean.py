@@ -1,6 +1,6 @@
-from select import select
 import pandas as pd
 from pathlib import Path
+import janitor
 
 def clean_modis(pth):
     print(pth)
@@ -15,8 +15,11 @@ def clean_modis(pth):
     final_cols = select_cols + valid_cols
     dat = dat[final_cols]
     filt = dat[valid_cols] > -1000
-
     dat =  dat[filt.iloc[:, 0]]
+
+    # TODO: Get pyjanitor working, then use 
+    # dat.pivot_longer(index = "date", column_names = valid_cols, names_to = "variable", values_to = "value")
+
     tmp_dfs = []
     for x in valid_cols:
 
