@@ -137,3 +137,12 @@ class Task:
             f_list = [x for x in bundle_response["files"] if x["file_type"] == "csv"]
             for f in f_list:
                 self._write_file(f, dirname, token)
+
+    @staticmethod
+    def list_task(token):
+        response = requests.get(
+            'https://appeears.earthdatacloud.nasa.gov/api/task', 
+            headers={'Authorization': 'Bearer {0}'.format(token)},
+        )
+        task_response = response.json()
+        return task_response

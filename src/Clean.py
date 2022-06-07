@@ -1,9 +1,11 @@
 import pandas as pd
 from pathlib import Path
+from Product import Product
 import janitor
 
 def clean_modis(pth):
-    print(pth)
+    product = ".".join(pth.stem.split("-")[-3:-1])
+    product = Product(product)
     valid_cols = ['NDVI', 'EVI', 'ET', 'PET', 'Fpar', 'Lai', 'Gpp']
     select_cols = ['ID', 'Latitude', 'Longitude', 'Date']
 
@@ -17,14 +19,17 @@ def clean_modis(pth):
     filt = dat[valid_cols] > -1000
     dat =  dat[filt.iloc[:, 0]]
 
-    # TODO: Get pyjanitor working, then use 
-    # dat.pivot_longer(index = "date", column_names = valid_cols, names_to = "variable", values_to = "value")
+    dat = dat.pivot_longer(
+        index = "Date", 
+        column_names = valid_cols, 
+        names_to = "variable",
+        values_to = "value"
+    )
 
-    tmp_dfs = []
-    for x in valid_cols:
+    #TODO: Implement multiplication by scale factors. 
 
-        dat[select_cols + [x]]
-
+    return dat
+    
 
 def clean_all_modis(dirname):
 
