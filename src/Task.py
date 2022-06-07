@@ -82,12 +82,12 @@ class Task:
 
         task_response = response.json()
         if response.status_code != 202:
-            raise InvalidRequestError(message=task_response['message'])
+            raise InvalidRequestError(message=task_response["message"])
         self.task_id = task_response["task_id"]
         self.status = task_response["status"]
 
     def status_update(self, token: str) -> str:
-        # TODO: Adjust this to work when task is running. 
+        # TODO: Adjust this to work when task is running.
         response = requests.get(
             "https://appeears.earthdatacloud.nasa.gov/api/status/{0}".format(
                 self.task_id
@@ -141,8 +141,8 @@ class Task:
     @staticmethod
     def list_task(token):
         response = requests.get(
-            'https://appeears.earthdatacloud.nasa.gov/api/task', 
-            headers={'Authorization': 'Bearer {0}'.format(token)},
+            "https://appeears.earthdatacloud.nasa.gov/api/task",
+            headers={"Authorization": "Bearer {0}".format(token)},
         )
         task_response = response.json()
         return task_response

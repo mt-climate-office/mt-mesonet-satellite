@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict
 import requests
 
-@dataclass 
+
+@dataclass
 class Layer:
     AddOffset: Optional[float]
     Available: bool
@@ -35,9 +36,10 @@ class Product:
 
     def get_layers(self):
         response = requests.get(
-            'https://appeears.earthdatacloud.nasa.gov/api/product/{0}'.format(self.product)
+            "https://appeears.earthdatacloud.nasa.gov/api/product/{0}".format(
+                self.product
+            )
         )
         layer_response = response.json()
-        
-        return {k:Layer(**v) for k, v in layer_response.items()}
-        
+
+        return {k: Layer(**v) for k, v in layer_response.items()}
