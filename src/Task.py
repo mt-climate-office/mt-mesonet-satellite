@@ -107,8 +107,10 @@ class Submit(Task):
     end_year: Optional[int] = None
 
     def __post_init__(self):
-        if '-' in self.name:
-            raise ValueError("A '-' is present in the name arguement. This character cannot be used in the task name.")
+        if "-" in self.name:
+            raise ValueError(
+                "A '-' is present in the name arguement. This character cannot be used in the task name."
+            )
 
     def build_point_task(self) -> Dict[str, str]:
         dates = {

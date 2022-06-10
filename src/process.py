@@ -86,7 +86,6 @@ smap.launch(token=session.token)
 ## Download Task from list:
 
 tasks = list_task(session.token)
-task = [x for x in tasks if x['task_name'] == 'mesonet-smap-download'][0]
+task = [x for x in tasks if x["task_name"] == "mesonet-smap-download"][0]
 task = Task.from_response(task)
 task.download("../data", session.token, False)
-
