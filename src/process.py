@@ -1,13 +1,13 @@
 from Geom import Point
 from Session import Session
-from Task import Task
+from Task import Task, Submit, list_task
 
 import datetime as dt
 
 stations = Point.from_mesonet()
 session = Session()
-aqua = Task(
-    name="mesonet-aqua-download",
+aqua = Submit(
+    name="mesonet_aqua_download",
     products=[
         "MYD13A1.061",
         "MYD13A1.061",
@@ -26,13 +26,13 @@ aqua = Task(
         "PET_500m",
         "Gpp_500m",
     ],
-    start_date="2000-01-01",
+    start_date="2022-06-01",
     end_date=str(dt.date.today()),
     geom=stations,
 )
 
-terra = Task(
-    name="mesonet-terra-download",
+terra = Submit(
+    name="mesonet_terra_download",
     products=[
         "MOD13A1.061",
         "MOD13A1.061",
@@ -57,8 +57,8 @@ terra = Task(
 )
 
 
-smap = Task(
-    name="mesonet-smap-download",
+smap = Submit(
+    name="mesonet_smap_download",
     products=[
         "SPL4CMDL.006",
         "SPL4SMGP.006",
@@ -81,3 +81,12 @@ smap = Task(
 aqua.launch(token=session.token)
 terra.launch(token=session.token)
 smap.launch(token=session.token)
+
+
+## Download Task from list:
+
+tasks = list_task(session.token)
+task = [x for x in tasks if x['task_name'] == 'mesonet-smap-download'][0]
+task = Task.from_response(task)
+task.download("../data", session.token, False)
+

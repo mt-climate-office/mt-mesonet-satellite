@@ -1,7 +1,30 @@
+from dataclasses import dataclass, field
 import pandas as pd
 from pathlib import Path
-from Product import Product
+from typing import Union, Dict
+from Product import Product, Layer
 import janitor
+
+
+@dataclass
+class Cleaner:
+    f: Union[str, Path]
+    product: str = field(init = False)
+    raw: pd.DataFrame = field(init = False)
+    meta: Product = field(init = False)
+    layers: Dict[str, Layer] = field(init = False)
+
+    def __post_init__(self):
+        parts = self.f.stem.split('-')
+        self.product = f"{parts[1]}.{parts[2]}"
+        self.raw = pd.read_csv(self.f)
+        self.raw.columns = self.raw.columns.str.replace(f"{parts[1]}_{parts[2]}_", "")
+        self.meta = Product(self.product)
+        self.layers = {x:self.meta.layers[x] for x in self.meta.layers if x in self.raw.columns}
+    
+    def filter(self):
+        # TODO: Implement filtering by min/max values. Multiply by scale factor, remove fill value.
+        pass            
 
 
 def clean_modis(pth):

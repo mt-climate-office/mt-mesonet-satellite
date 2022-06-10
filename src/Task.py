@@ -22,69 +22,24 @@ class InvalidRequestError(Exception):
         super().__init__(self.message)
 
 
+def list_task(token):
+    response = requests.get(
+        "https://appeears.earthdatacloud.nasa.gov/api/task",
+        headers={"Authorization": "Bearer {0}".format(token)},
+    )
+    task_response = response.json()
+    return task_response
+
+
 @dataclass
 class Task:
-    name: str
-    products: List[str]
-    layers: List[str]
-    start_date: str
-    end_date: str
-    geom: Union[Point, Poly]
-    recurring: Optional[bool] = False
-    start_year: Optional[int] = None
-    end_year: Optional[int] = None
-    task_id: str = field(init=False)
-    status: str = field(init=False)
+    task_id: Optional[str] = None
+    status: Optional[str] = None
 
-    def build_point_task(self) -> Dict[str, str]:
-        dates = {
-            "startDate": self.start_date,
-            "endDate": self.end_date,
-        }
-        if self.recurring:
-            assert (
-                self.start_year and self.end_year
-            ), "If recurring is set to true, start_year and end_year must also be valid years."
-            dates.update(
-                {self.recurring: True, "yearRange": [self.start_year, self.end_year]}
-            )
-
-        task = {
-            "task_type": "point",
-            "task_name": self.name,
-            "params": {
-                "dates": [dates],
-                "layers": [
-                    {"product": x, "layer": y}
-                    for x, y in zip(self.products, self.layers)
-                ],
-                "coordinates": self.geom.task_format(),
-            },
-        }
-
-        return task
-
-    def build_poly_task(self) -> Dict[str, str]:
-        raise NotImplementedError("This method is not implemented yet.")
-
-    def launch(self, token: str):
-        task = (
-            self.build_point_task()
-            if isinstance(self.geom, Point)
-            else self.build_poly_task()
-        )
-
-        response = requests.post(
-            "https://appeears.earthdatacloud.nasa.gov/api/task",
-            json=task,
-            headers={"Authorization": "Bearer {0}".format(token)},
-        )
-
-        task_response = response.json()
-        if response.status_code != 202:
-            raise InvalidRequestError(message=task_response["message"])
-        self.task_id = task_response["task_id"]
-        self.status = task_response["status"]
+    @classmethod
+    def from_response(cls, response):
+        status = "pending" if "status" not in response else response["status"]
+        return cls(response["task_id"], status)
 
     def status_update(self, token: str) -> str:
         # TODO: Adjust this to work when task is running.
@@ -138,11 +93,69 @@ class Task:
             for f in f_list:
                 self._write_file(f, dirname, token)
 
-    @staticmethod
-    def list_task(token):
-        response = requests.get(
+
+@dataclass
+class Submit(Task):
+    name: str = field(default=str)
+    products: List[str] = field(default_factory=list)
+    layers: List[str] = field(default_factory=list)
+    start_date: str = field(default=str)
+    end_date: str = field(default=str)
+    geom: Union[Point, Poly] = field(default_factory=Point.from_mesonet)
+    recurring: Optional[bool] = False
+    start_year: Optional[int] = None
+    end_year: Optional[int] = None
+
+    def __post_init__(self):
+        if '-' in self.name:
+            raise ValueError("A '-' is present in the name arguement. This character cannot be used in the task name.")
+
+    def build_point_task(self) -> Dict[str, str]:
+        dates = {
+            "startDate": self.start_date,
+            "endDate": self.end_date,
+        }
+        if self.recurring:
+            assert (
+                self.start_year and self.end_year
+            ), "If recurring is set to true, start_year and end_year must also be valid years."
+            dates.update(
+                {self.recurring: True, "yearRange": [self.start_year, self.end_year]}
+            )
+
+        task = {
+            "task_type": "point",
+            "task_name": self.name,
+            "params": {
+                "dates": [dates],
+                "layers": [
+                    {"product": x, "layer": y}
+                    for x, y in zip(self.products, self.layers)
+                ],
+                "coordinates": self.geom.task_format(),
+            },
+        }
+
+        return task
+
+    def build_poly_task(self) -> Dict[str, str]:
+        raise NotImplementedError("This method is not implemented yet.")
+
+    def launch(self, token: str):
+        task = (
+            self.build_point_task()
+            if isinstance(self.geom, Point)
+            else self.build_poly_task()
+        )
+
+        response = requests.post(
             "https://appeears.earthdatacloud.nasa.gov/api/task",
+            json=task,
             headers={"Authorization": "Bearer {0}".format(token)},
         )
+
         task_response = response.json()
-        return task_response
+        if response.status_code != 202:
+            raise InvalidRequestError(message=task_response["message"])
+        self.task_id = task_response["task_id"]
+        self.status = task_response["status"]

@@ -6,7 +6,7 @@ authors = ["Colin Brust <colin.brust@mso.umt.edu>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 requests = "^2.27.1"
 pandas = "^1.4.2"
 numpy = "^1.22.4"
