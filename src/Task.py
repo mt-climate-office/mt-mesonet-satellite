@@ -1,10 +1,10 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 
 from Geom import Point, Poly
 from typing import Any, Dict, List, Optional, Union
 import requests
 from pathlib import Path
-from __future__ import annotations
 
 
 class PendingTaskError(Exception):
@@ -120,7 +120,7 @@ class Task:
             download_all (bool, optional): Whether or not all associated metadata files should also be saved out. Defaults to False.
 
         Raises:
-            PendingTaskError: _description_
+            PendingTaskError: Raised if the task is still running. 
         """
         if self.status_update(token) != "done":
             raise PendingTaskError()
