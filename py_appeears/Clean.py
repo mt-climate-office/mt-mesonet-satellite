@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Union, Dict, Optional
-from Product import Product, Layer
+from .Product import Product, Layer
 import janitor
 
 

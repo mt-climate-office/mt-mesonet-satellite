@@ -1,9 +1,12 @@
 [tool.poetry]
-name = "py-appeears"
+name = "py_appeears"
 version = "0.1.0"
 description = ""
 authors = ["Colin Brust <colin.brust@mso.umt.edu>"]
 license = "MIT"
+packages = [
+    { include = "py_appeears" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"

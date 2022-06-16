@@ -1,6 +1,6 @@
-from Geom import Point
-from Session import Session
-from Task import Task, Submit, list_task
+from .Geom import Point
+from .Session import Session
+from .Task import Task, Submit, list_task
 
 import datetime as dt
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 
-from Geom import Point, Poly
+from .Geom import Point, Poly
 from typing import Any, Dict, List, Optional, Union
 import requests
 from pathlib import Path

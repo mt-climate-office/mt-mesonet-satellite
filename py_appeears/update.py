@@ -5,10 +5,10 @@ from pathlib import Path
 import time
 from operator import itemgetter
 
-from Task import Submit, PendingTaskError
-from Session import Session
-from Geom import Point
-from Clean import clean_all
+from .Task import Submit, PendingTaskError
+from .Session import Session
+from .Geom import Point
+from .Clean import clean_all
 
 
 def find_missing_data(dat: pd.DataFrame) -> pd.DataFrame:
