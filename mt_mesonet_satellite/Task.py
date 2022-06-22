@@ -30,7 +30,7 @@ def list_task(token: str) -> List[Dict[str, Any]]:
         token (str): Session validation token.
 
     Returns:
-        List[Dict[str, Any]]: List of dicts containing information about all tasks. 
+        List[Dict[str, Any]]: List of dicts containing information about all tasks.
     """
     response = requests.get(
         "https://appeears.earthdatacloud.nasa.gov/api/task",
@@ -50,6 +50,7 @@ class Task:
         task_id (Optional[str]): A unique ID associated with a given task.
         status (Optional[str]): The status of the task. One of 'error', 'pending' or 'done'.
     """
+
     task_id: Optional[str] = None
     status: Optional[str] = None
 
@@ -89,12 +90,12 @@ class Task:
         return self.status
 
     def _write_file(self, f: Dict[str, Any], dirname: Union[Path, str], token: str):
-        """Write data from a completed task to disk. 
+        """Write data from a completed task to disk.
 
         Args:
             f (Dict[str, Any]): Dictionary containing information about a file.
-            dirname (Union[Path, str]): Directory to write the file out to. 
-            token (str): token from the Session object. 
+            dirname (Union[Path, str]): Directory to write the file out to.
+            token (str): token from the Session object.
         """
         response = requests.get(
             "https://appeears.earthdatacloud.nasa.gov/api/bundle/{0}/{1}".format(
@@ -115,12 +116,12 @@ class Task:
         """Download all files associated with a task
 
         Args:
-            dirname (Union[Path, str]): Directory to write data to. 
-            token (str): Token from Session object. 
+            dirname (Union[Path, str]): Directory to write data to.
+            token (str): Token from Session object.
             download_all (bool, optional): Whether or not all associated metadata files should also be saved out. Defaults to False.
 
         Raises:
-            PendingTaskError: Raised if the task is still running. 
+            PendingTaskError: Raised if the task is still running.
         """
         if self.status_update(token) != "done":
             raise PendingTaskError()
@@ -148,22 +149,23 @@ class Submit(Task):
     """Child of Task class that is used to generate a task from various arguments.
 
     Attributes:
-        name (str): The name to associate the task with. 
+        name (str): The name to associate the task with.
         products (List[str]): List of products to generate a task for.
         layers (List[str]): Layers associated with each product to download.
         start_date (str): "YYYY-MM-DD" formatted string to start task download at.
         end_date (str): "YYYY-MM-DD" formatted string to end task download at.
-        geom (Union[Point, Poly]): The geometry to perform the task over. 
+        geom (Union[Point, Poly]): The geometry to perform the task over.
         recurring (bool): Whether to repeat task downloads over start_year, end_year range. Defaults to False.
         start_year (Optional[int]): Year to start task. Defaults to None.
         end_year (Optional[int]): Year to end task. Defaults to None.
 
     Raises:
-        ValueError: Raised if a hyphen is in the name attribute. 
-        NotImplementedError: Raised if geom is of type Poly. 
-        InvalidRequestError: Raised if there are any errors in the request parameters. 
+        ValueError: Raised if a hyphen is in the name attribute.
+        NotImplementedError: Raised if geom is of type Poly.
+        InvalidRequestError: Raised if there are any errors in the request parameters.
 
     """
+
     name: str = field(default=str)
     products: List[str] = field(default_factory=list)
     layers: List[str] = field(default_factory=list)
@@ -217,10 +219,10 @@ class Submit(Task):
         raise NotImplementedError("This method is not implemented yet.")
 
     def launch(self, token: str):
-        """Function to begin the task. 
+        """Function to begin the task.
 
         Args:
-            token (str): Token from the session object. 
+            token (str): Token from the session object.
 
         Raises:
             InvalidRequestError: Raised if there are any errors in the request parameters.

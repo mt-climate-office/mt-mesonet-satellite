@@ -67,9 +67,9 @@ class Cleaner:
 
         dat = dat.assign(product=self.product)
 
-        unit_map = {k:v.Units for k, v in self.layers.items()}
-        dat = dat.assign(units = dat['element'])
-        dat = dat.replace({'units': unit_map})
+        unit_map = {k: v.Units for k, v in self.layers.items()}
+        dat = dat.assign(units=dat["element"])
+        dat = dat.replace({"units": unit_map})
 
         return dat
 

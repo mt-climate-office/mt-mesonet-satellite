@@ -115,7 +115,7 @@ def update_master(dirname: Union[str, Path], master: Union[str, Path]) -> pd.Dat
         master (Union[str, Path]): Path to the master dataframe.
 
     Returns:
-        pd.DataFrame: Updated version of the master dataframe. 
+        pd.DataFrame: Updated version of the master dataframe.
     """
     dat = clean_all(dirname, None)
     master_df = pd.read_csv(master)

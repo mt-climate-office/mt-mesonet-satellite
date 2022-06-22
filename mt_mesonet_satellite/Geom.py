@@ -11,11 +11,12 @@ class Point:
     """Class to encode point data into json that can be accepted by the AppEEARS API.
 
     Attributes:
-        lats (List[float]): List of latitudes to extract data at. 
-        lons (List[float]): List of longitudes to extract data at. 
+        lats (List[float]): List of latitudes to extract data at.
+        lons (List[float]): List of longitudes to extract data at.
         ids (List[str]): List of unique IDs to identify each point.
 
     """
+
     lats: List[float]
     lons: List[float]
     ids: List[str]
@@ -51,10 +52,10 @@ class Point:
 
         Args:
             pth (Union[Path, str]): Path to the .geojson to convert.
-            id_col (str): The .geojson attribute column to use as the Point's ID attribute. 
+            id_col (str): The .geojson attribute column to use as the Point's ID attribute.
 
         Returns:
-            Point: A Point object from the 
+            Point: A Point object from the
         """
         dat = gpd.read_file(pth)
         return cls(
