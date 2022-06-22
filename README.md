@@ -1,8 +1,7 @@
-# Py AppEEARS
-A Python package to extract NASA satellite data at Montana Climate Office Mesonet stations using the [AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/?python). The AppEEARS API requires a NASA Earthdata login ([https://urs.earthdata.nasa.gov/users/new](https://urs.earthdata.nasa.gov/users/new)). Additionally, to facilitate using this package, it helps to have Earthdata credentials stored in a file named '~/.netrc', which is a simple text document with the following format:
+# MT-MESONET-SATELLITE
+A Python package to extract NASA satellite data at Montana Climate Office Mesonet stations using the [AppEEARS API](https://appeears.earthdatacloud.nasa.gov/api/?python) and store it in a [Neo4j](https://neo4j.com/) database. The AppEEARS API requires a NASA Earthdata login ([https://urs.earthdata.nasa.gov/users/new](https://urs.earthdata.nasa.gov/users/new)). Additionally, to facilitate using this package, it helps to have Earthdata credentials stored in a file named '~/.netrc', which is a simple text document with the following format:
 
 | machine  | urs.earthdata.nasa.gov   |
-|----------|--------------------------|
 | login    | yourEmail@yourDomain.com |
 | password | yourPassword             |
 
@@ -17,8 +16,7 @@ or using poetry:
 Below is an example of how to use the package 
 
 ```python
-import py_appeears import Point, Session, Submit, list_task
-
+import mt_mesonet_satellite import Point, Session, Submit, list_task
 import datetime as dt
 
 # login to an AppEEARS session
