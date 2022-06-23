@@ -10,5 +10,3 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 COPY ./pyproject.toml ./poetry.lock* /setup/
 
 RUN cd /setup && poetry install --no-root --no-dev
-
-COPY . /app

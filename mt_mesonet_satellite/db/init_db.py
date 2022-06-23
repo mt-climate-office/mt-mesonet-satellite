@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 
 
-def reformat_master_appeears(
+def init_appeears_data(
     f: Union[str, Path], neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/"
 ) -> None:
     """Convert dates to unix timestamps, clean element names, and save data to neo4j import directory.
@@ -42,9 +42,18 @@ def reformat_master_appeears(
             }
         }
     )
-
-    dat.to_csv(Path(neo4j_pth) / "appeears_init.csv")
+    print("Data succesfully reformatted,")
+    dat.to_csv(Path(neo4j_pth) / "data_init.csv", index=False)
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser("Convenience to ")
+    parser = argparse.ArgumentParser("Convenience to help run as root.")
+    parser.add_argument(
+        '-f', '--file', type=Path, help='master_db.csv file to reformat'
+    )
+    parser.add_argument(
+        '-od', '--outdir', type=Path, help='Neo4j directory to save dataframe to.'
+    )
+    args = parser.parse_args()
+
+    init_appeears_data(args.file, args.outdir)
