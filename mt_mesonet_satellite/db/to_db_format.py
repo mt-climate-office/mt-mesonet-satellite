@@ -1,11 +1,11 @@
 import argparse
 import pandas as pd
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
+import numpy as np
 
-
-def init_appeears_data(
-    f: Union[str, Path], neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/"
+def to_db_format(
+    f: Union[str, Path], neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/", out_name: Optional[str]=None
 ) -> None:
     """Convert dates to unix timestamps, clean element names, and save data to neo4j import directory.
        for Ubuntu machines, the defaults is /var/lib/neo4j/import/
@@ -42,8 +42,14 @@ def init_appeears_data(
             }
         }
     )
+    dat = dat.assign(id = dat.station + '_' + dat.timestamp.astype(str) + '_' + dat.platform + '_' + dat.element)
     print("Data succesfully reformatted,")
-    dat.to_csv(Path(neo4j_pth) / "data_init.csv", index=False)
+    dat = dat.drop_duplicates()
+    out_name = Path(f).stem if not out_name else out_name
+    groups = dat.groupby(np.arange(len(dat.index))//5000)
+    for (num, tmp) in groups:
+        tmp_name = f"{out_name}_{num}.csv"
+        tmp.to_csv(Path(neo4j_pth) / tmp_name)
 
 if __name__ == '__main__':
 
@@ -54,6 +60,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-od', '--outdir', type=Path, help='Neo4j directory to save dataframe to.'
     )
+    parser.add_argument(
+        '-on', '--outname', type=Path, help='Filename to use for the output file.', default="data_init"
+    )
     args = parser.parse_args()
 
-    init_appeears_data(args.file, args.outdir)
+    to_db_format(args.file, args.outdir, args.outname)
