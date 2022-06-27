@@ -9,7 +9,7 @@ services:
         container_name: neo4j
         restart: always
         image: neo4j:latest
-        user: "1001:1001"
+        # user: "1001:1001"
         volumes:
           - $HOME/data/neo4j/data:/data 
           - $HOME/data/neo4j/logs:/logs 
