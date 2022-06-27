@@ -1,6 +1,7 @@
-from .Geom import Point
-from .Session import Session
-from .Task import Task, Submit, list_task
+from mt_mesonet_satellite import Point
+from mt_mesonet_satellite import Session
+from mt_mesonet_satellite import Task, Submit
+
 
 import datetime as dt
 
@@ -81,11 +82,3 @@ smap = Submit(
 aqua.launch(token=session.token)
 terra.launch(token=session.token)
 smap.launch(token=session.token)
-
-
-## Download Task from list:
-
-tasks = list_task(session.token)
-task = [x for x in tasks if x["task_name"] == "mesonet-smap-download"][0]
-task = Task.from_response(task)
-task.download("../data", session.token, False)

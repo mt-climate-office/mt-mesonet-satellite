@@ -87,13 +87,18 @@ def wait_on_tasks(
         wait (int, optional): How long to wait before trying to download data again. Defaults to 300.
     """
     indices = []
+    dirname = Path(dirname)
+
+    if not Path(dirname).exists():
+        dirname.mkdir(exist_ok=False)
+
     while True:
         for idx, task in enumerate(tasks):
             try:
                 task.download(dirname, session.token, False)
                 tasks.pop(idx)
             except PendingTaskError as e:
-                print(f"{e}\n{task.name} is still running...")
+                print(f"{e}\n{task.task_id} is still running...")
                 indices.append(idx)
 
         try:
@@ -117,7 +122,8 @@ def update_master(dirname: Union[str, Path], master: Union[str, Path]) -> pd.Dat
     Returns:
         pd.DataFrame: Updated version of the master dataframe.
     """
-    dat = clean_all(dirname, None)
+    out_name = Path(dirname) / "clean.csv"
+    dat = clean_all(dirname, out_name)
     master_df = pd.read_csv(master)
     out = pd.concat([dat, master_df], axis=0).drop_duplicates()
     out.to_csv(master, index=False)

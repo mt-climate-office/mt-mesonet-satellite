@@ -4,9 +4,14 @@ from pathlib import Path
 from typing import Union, Optional
 import numpy as np
 
+
 def to_db_format(
-    f: Union[str, Path], neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/", out_name: Optional[str]=None
-) -> None:
+    f: Union[str, Path],
+    neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/",
+    out_name: Optional[str] = None,
+    write=False,
+    split=False,
+) -> pd.DataFrame:
     """Convert dates to unix timestamps, clean element names, and save data to neo4j import directory.
        for Ubuntu machines, the defaults is /var/lib/neo4j/import/
 
@@ -42,27 +47,72 @@ def to_db_format(
             }
         }
     )
-    dat = dat.assign(id = dat.station + '_' + dat.timestamp.astype(str) + '_' + dat.platform + '_' + dat.element)
-    print("Data succesfully reformatted,")
+    dat = dat.assign(
+        id=dat.station
+        + "_"
+        + dat.timestamp.astype(str)
+        + "_"
+        + dat.platform
+        + "_"
+        + dat.element
+    )
+    dat = dat.assign(units=dat.units.replace(np.nan, "unitless"))
+    print("Data succesfully reformatted.")
     dat = dat.drop_duplicates()
-    out_name = Path(f).stem if not out_name else out_name
-    groups = dat.groupby(np.arange(len(dat.index))//5000)
-    for (num, tmp) in groups:
-        tmp_name = f"{out_name}_{num}.csv"
-        tmp.to_csv(Path(neo4j_pth) / tmp_name)
 
-if __name__ == '__main__':
+    if write:
+        if split:
+            out_name = Path(f).stem if not out_name else out_name
+            groups = dat.groupby(np.arange(len(dat.index)) // 5000)
+            for (num, tmp) in groups:
+                tmp_name = f"{out_name}_{num}.csv"
+                tmp.to_csv(Path(neo4j_pth) / tmp_name, index=False)
+        else:
+            dat.to_csv(Path(neo4j_pth) / f"{out_name}.csv", index=False)
+
+    return dat
+
+
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Convenience to help run as root.")
     parser.add_argument(
-        '-f', '--file', type=Path, help='master_db.csv file to reformat'
+        "-f", "--file", type=Path, help="master_db.csv file to reformat"
     )
     parser.add_argument(
-        '-od', '--outdir', type=Path, help='Neo4j directory to save dataframe to.'
+        "-od", "--outdir", type=Path, help="Neo4j directory to save dataframe to."
     )
     parser.add_argument(
-        '-on', '--outname', type=Path, help='Filename to use for the output file.', default="data_init"
+        "-on",
+        "--outname",
+        type=Path,
+        help="Filename to use for the output file.",
+        default="data_init",
+    )
+    parser.add_argument(
+        "--write",
+        dest="write",
+        action="store_true",
+        help="Write resulting file to disk.",
+    )
+    parser.add_argument(
+        "--no-write",
+        dest="write",
+        action="store_false",
+        help="Don't write resulting file to disk.",
+    )
+    parser.add_argument(
+        "--split",
+        dest="split",
+        action="store_true",
+        help="Split data into smaller subsets.",
+    )
+    parser.add_argument(
+        "--no-split",
+        dest="split",
+        action="store_false",
+        help="Don't split data into smaller subsets.",
     )
     args = parser.parse_args()
 
-    to_db_format(args.file, args.outdir, args.outname)
+    to_db_format(args.file, args.outdir, args.outname, args.write, args.split)
