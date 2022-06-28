@@ -17,6 +17,7 @@ geopandas = "^0.10.2"
 pyjanitor = "^0.23.1"
 neo4j = "^4.4.4"
 neo4j-driver = "^4.4.4"
+python-dotenv = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

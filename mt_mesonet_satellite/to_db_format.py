@@ -56,9 +56,12 @@ def to_db_format(
         + "_"
         + dat.element
     )
-    dat = dat.assign(units=dat.units.replace(np.nan, "unitless"))
+    dat = dat.assign(units=dat.units.fillna('unitless'))
+    dat = dat.assign(value = dat.value.fillna(-9999))
     print("Data succesfully reformatted.")
     dat = dat.drop_duplicates()
+    dat = dat.assign(value = np.where((dat.platform != "SPL4CMDL.006") & (dat.element == 'GPP'), (dat.value * 1000)/8, dat.value))
+    dat = dat.assign(units = np.where((dat.platform != "SPL4CMDL.006") & (dat.element == 'GPP'), "gCm^-2day^-1", dat.units))
 
     if write:
         if split:
