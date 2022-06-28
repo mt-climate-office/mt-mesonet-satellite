@@ -12,15 +12,22 @@ tasks = tasks[:-5]
 tasks = [Task.from_response(x) for x in tasks]
 
 for task in tasks:
-    task.download("/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628", session.token, False)
+    task.download(
+        "/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628",
+        session.token,
+        False,
+    )
 
-clean_all(save="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/master_db.csv", dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628")
+clean_all(
+    save="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/master_db.csv",
+    dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628",
+)
 to_db_format(
     f="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/master_db.csv",
     neo4j_pth="/Users/colinbrust/data/neo4j/import",
     out_name="data_init",
-    write=True, 
-    split=True
+    write=True,
+    split=True,
 )
 
 # stations = Point.from_mesonet()
