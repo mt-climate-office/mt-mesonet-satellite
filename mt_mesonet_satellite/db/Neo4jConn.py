@@ -28,11 +28,11 @@ class MeonetSatelliteDB:
             return dat
 
     def post(self, dat: pd.DataFrame):
-        with driver.driver.session() as session:
+        with self.driver.session() as session:
             for idx, row in dat.iterrows():
-                print(f"{(idx/len(dat))*100:2.3f}%")
+                print(f"{(idx/len(dat))*100:2.3f}% Done Uploading")
                 try:
-                    session.write_transaction(driver._post_data, **row.to_dict())
+                    session.write_transaction(self._post_data, **row.to_dict())
                 except ConstraintError as e:
                     print(e)
                     continue
@@ -82,6 +82,3 @@ class MeonetSatelliteDB:
         )
 
 
-driver = MeonetSatelliteDB("bolt://localhost:7687", "neo4j", "test")
-# response = driver.query(start_time=1577862000, end_time=1580540400, station='aceingom', element='GPP')
-driver.close()
