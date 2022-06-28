@@ -65,7 +65,7 @@ class MesonetSatelliteDB:
                     "platform",
                     "element",
                     "value",
-                    "units",
+                    "units"
                 ]
             except ValueError as e:
                 print("No available data for this query.")
@@ -101,7 +101,7 @@ class MesonetSatelliteDB:
         result = tx.run(
             "MATCH p = (obs:Observation)<-[o:OBSERVES]-(s:Station) "
             "WHERE o.timestamp >= $start_time and o.timestamp <= $end_time and s.name = $station and obs.element = $element "
-            "RETURN s.name, o.timestamp, obs.platform,  obs.element, obs.value",
+            "RETURN s.name, o.timestamp, obs.platform,  obs.element, obs.value, obs.units",
             **kwargs,
         )
         return result.values()
