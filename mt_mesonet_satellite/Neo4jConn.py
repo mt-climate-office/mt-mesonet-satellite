@@ -111,5 +111,3 @@ class MesonetSatelliteDB:
             "CREATE (station)-[:OBSERVES {timestamp: toInteger(line.timestamp)}]->(obs) ",
             f_path=f_path,
         )
-
-
