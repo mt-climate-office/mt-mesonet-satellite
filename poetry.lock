@@ -466,37 +466,14 @@ pytz = "*"
 
 [[package]]
 name = "neo4j-driver"
-version = "4.3.6"
+version = "4.4.4"
 description = "Neo4j Bolt driver for Python"
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [package.dependencies]
 pytz = "*"
-
-[[package]]
-name = "neobolt"
-version = "1.7.17"
-description = "Neo4j Bolt connector for Python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
-name = "neomodel"
-version = "4.0.8"
-description = "An object mapper for the neo4j graph database."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-neo4j-driver = "4.3.6"
-neobolt = "1.7.17"
-pytz = ">=2021.1"
-Shapely = "1.7.1"
-six = "1.16.0"
 
 [[package]]
 name = "nest-asyncio"
@@ -934,7 +911,7 @@ viz = ["matplotlib", "seaborn", "nc-time-axis"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f257fe228ff2bc6b332cef06b365f5deb6733caab3057d5dd11d3e3c0cb6c4b7"
+content-hash = "693bd2a30f2563901421045e0a1a0e5801d1223419674625a85cb6668483f779"
 
 [metadata.files]
 appnope = [
@@ -1246,14 +1223,7 @@ neo4j = [
     {file = "neo4j-4.4.4.tar.gz", hash = "sha256:4f8982028021f9fc5e3e3605e6368302d6a97ea75a48666ae49fcc974113a3c8"},
 ]
 neo4j-driver = [
-    {file = "neo4j-driver-4.3.6.tar.gz", hash = "sha256:59e16752c1bdd72b43f26786183a7b47c17e16c2ec6afd819390623988dff4ff"},
-]
-neobolt = [
-    {file = "neobolt-1.7.17.tar.gz", hash = "sha256:1d0d5efce7221fc4f0ffc4a315bc5272708be5aa2aef5434269e800372d8db89"},
-]
-neomodel = [
-    {file = "neomodel-4.0.8-py3-none-any.whl", hash = "sha256:c065e5f8e62388d54486e3c6d08834d3dd574893d5c81b56638f917def681dde"},
-    {file = "neomodel-4.0.8.tar.gz", hash = "sha256:9049fa006149de741abc0c2b78725f07b90a6a630f3fb43df64efeb9a3a0071b"},
+    {file = "neo4j-driver-4.4.4.tar.gz", hash = "sha256:7d89aa7a9fe06c2a63d00ef97a7303ae7589cf2f96099fd00aa7d646864a1f90"},
 ]
 nest-asyncio = [
     {file = "nest_asyncio-1.5.5-py3-none-any.whl", hash = "sha256:b98e3ec1b246135e4642eceffa5a6c23a3ab12c82ff816a92c612d68205813b2"},
