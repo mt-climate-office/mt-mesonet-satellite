@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from neo4j import GraphDatabase
 import pandas as pd
 from pathlib import Path
@@ -47,10 +48,14 @@ class MesonetSatelliteDB:
             pd.DataFrame: A dataframe of the data returned from the query. 
         """
         with self.driver.session() as session:
-            response = session.write_transaction(self._build_query, station=station, start_time=start_time, end_time=end_time, element=element)
-            dat = pd.DataFrame(response)
-            dat.columns = ["value", "date", "station", "platform", "element"]
 
+            try:
+                response = session.write_transaction(self._build_query, station=station, start_time=start_time, end_time=end_time, element=element)
+                dat = pd.DataFrame(response)
+                dat.columns = ["value", "date", "station", "platform", "element"]
+            except ValueError as e:
+                print("No available data for this query.")
+                dat = pd.DataFrame()
             return dat
 
     def post(self, dat: pd.DataFrame):
