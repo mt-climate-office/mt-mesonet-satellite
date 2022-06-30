@@ -21,6 +21,12 @@ class MesonetSatelliteDB:
         """Close the connection to the Neo4j database."""
         self.driver.close()
 
+    def init_db_indices(self):
+        """Initialize index relationships and unique constraints. 
+        """
+        with self.driver.session() as session:
+            session.write_transaction(self._init_index)
+
     def init_db(self, f_dir: Union[str, Path]):
         """Initialize the Neo4j database using satellite data derived from the to_db_format.py script.
 
@@ -28,7 +34,6 @@ class MesonetSatelliteDB:
             f_dir (Union[str, Path]): The directory with the 'data_init' files to save to the database.
         """
         with self.driver.session() as session:
-            session.write_transaction(self._init_index)
             # Had to break file into multiple to keep from breaking.
             for f in Path(f_dir).glob("data_init*"):
                 f_path = f"file:///{f.name}"
