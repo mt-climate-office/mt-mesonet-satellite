@@ -7,15 +7,15 @@ services:
         image: neo4j:latest
         # user: "1001:1001"
         volumes:
-          - $HOME/data/neo4j/data:/data 
-          - $HOME/data/neo4j/logs:/logs 
-          - $HOME/data/neo4j/import:/var/lib/neo4j/import 
-          - $HOME/data/neo4j/plugins:/plugins 
+          - /neo4j/data:/data 
+          - /neo4j/logs:/logs 
+          - /neo4j/import:/var/lib/neo4j/import 
+          - /neo4j/plugins:/plugins 
         ports:
           - "7474:7474"
           - "7687:7687"
-        environment:
-          - NEO4J_AUTH=neo4j/test
+        env_file:
+          - ./.env
 
     # mms:
     #     container_name: mms
