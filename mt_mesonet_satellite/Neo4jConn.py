@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from neo4j import GraphDatabase
 import pandas as pd
 from pathlib import Path
@@ -79,13 +78,38 @@ class MesonetSatelliteDB:
             dat (pd.DataFrame): Satellite data reformatted using the to_db_format function.
         """
         with self.driver.session() as session:
+            #TODO: Figure out how to properly handle exception in context manager. 
             for idx, row in dat.iterrows():
-                print(f"{(idx/len(dat))*100:2.3f}% Done Uploading")
+                print(idx)
+                print(f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded")
                 try:
                     session.write_transaction(self._post_data, **row.to_dict())
                 except ConstraintError as e:
                     print(e)
                     continue
+
+    
+    def get_latest(self):
+        with self.driver.session() as session:
+            response = session.write_transaction(self._get_latest)
+            dat = pd.DataFrame(response)
+        
+        dat.columns = ['date', 'platform', 'element']
+        dat = dat.assign(date = pd.to_datetime(dat.date, unit="s"))
+    
+        return dat
+
+    @staticmethod
+    def _get_latest(tx):
+        result = tx.run(
+            """
+            MATCH (s:Station)-[o:OBSERVES]->(obs:Observation)\n
+            RETURN MAX(o.timestamp) as time, obs.platform as platform, obs.element as element\n
+            ORDER BY time
+            """
+        )
+
+        return result.values()
 
     @staticmethod
     def _post_data(tx, **kwargs):
