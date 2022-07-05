@@ -1,12 +1,27 @@
 FROM python:3.9-slim
-RUN apt-get update && apt-get -y install curl
+RUN apt-get update && \
+    apt-get -y install curl && \
+    apt-get -y install cron && \
+    apt-get -y install python-pip
 
-# Install Poetry
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
 
-COPY ./pyproject.toml ./poetry.lock* /setup/
+WORKDIR /setup
+RUN pip install git+https://github.com/mt-climate-office/mt-mesonet-satellite.git#main
 
-RUN cd /setup && poetry install --no-root --no-dev
+COPY ./processing/cronjob /etc/cron.d/cronjob
+COPY ./processing/update.py /setup/
+ 
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/cronjob
+
+# Make update executable
+RUN chmod 0744 /setup/update.py
+
+# Apply cron job
+RUN crontab /etc/cron.d/cronjob
+ 
+# Create the log file to be able to run tail
+RUN touch /var/log/cron.log
+
+# Run the command on container startup
+CMD cron && tail -f /var/log/cron.log

@@ -129,9 +129,8 @@ def update_db(dirname: Union[Path, str], conn = MesonetSatelliteDB):
 
     cleaned = clean_all(dirname, False)
     formatted = to_db_format(f=cleaned, neo4j_pth=None, out_name=None, write=False, split=False)
-
+    formatted.reset_index(drop=True, inplace=True)
     conn.post(formatted)
-    dat = dat.assign(date = dat.date + pd.to_timedelta(1, unit="D"))
     conn.close()
 
 

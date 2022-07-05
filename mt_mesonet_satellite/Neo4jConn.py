@@ -77,16 +77,15 @@ class MesonetSatelliteDB:
         Args:
             dat (pd.DataFrame): Satellite data reformatted using the to_db_format function.
         """
-        with self.driver.session() as session:
-            #TODO: Figure out how to properly handle exception in context manager. 
-            for idx, row in dat.iterrows():
-                print(idx)
+        gen = dat.iterrows()
+        for idx, row in gen:
+            if idx % 10 == 0:
                 print(f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded")
-                try:
+            try:
+                with self.driver.session() as session:
                     session.write_transaction(self._post_data, **row.to_dict())
-                except ConstraintError as e:
-                    print(e)
-                    continue
+            except ConstraintError as e:
+                print(e)
 
     
     def get_latest(self):
