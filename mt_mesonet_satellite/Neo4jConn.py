@@ -21,8 +21,7 @@ class MesonetSatelliteDB:
         self.driver.close()
 
     def init_db_indices(self):
-        """Initialize index relationships and unique constraints. 
-        """
+        """Initialize index relationships and unique constraints."""
         with self.driver.session() as session:
             session.write_transaction(self._init_index)
 
@@ -69,7 +68,7 @@ class MesonetSatelliteDB:
                     "platform",
                     "element",
                     "value",
-                    "units"
+                    "units",
                 ]
             except ValueError as e:
                 print("No available data for this query.")
@@ -92,15 +91,14 @@ class MesonetSatelliteDB:
             except ConstraintError as e:
                 print(e)
 
-    
     def get_latest(self):
         with self.driver.session() as session:
             response = session.write_transaction(self._get_latest)
             dat = pd.DataFrame(response)
-        
-        dat.columns = ['date', 'platform', 'element']
-        dat = dat.assign(date = pd.to_datetime(dat.date, unit="s"))
-    
+
+        dat.columns = ["date", "platform", "element"]
+        dat = dat.assign(date=pd.to_datetime(dat.date, unit="s"))
+
         return dat
 
     @staticmethod

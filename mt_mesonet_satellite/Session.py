@@ -3,6 +3,7 @@ import requests
 import subprocess
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
+import os
 
 
 @dataclass
@@ -20,12 +21,14 @@ class Session:
     Attributes:
         username (Optional[str]): Earthdata username. If left as None, ~/.netrc will be used. Defaults to None.
         password (Optioanl[str]): Earthdata password. If left as None, ~/.netrc will be used. Defautls to None.
+        dot_env (Optional[bool]): Whether to load Earthdata user and password from your system's environment.
         creds (Dict[str, str]): Credentaials for a session provided after login.
         token (str): Token necessary to use AppEEARS API. Created upon login.
     """
 
     username: Optional[str] = None
     password: Optional[str] = None
+    dot_env: Optional[bool] = True
     creds: Dict[str, str] = field(init=False)
     token: str = field(init=False)
 
@@ -34,12 +37,18 @@ class Session:
         self.token = self.creds["token"]
 
     @staticmethod
-    def _get_auth() -> Tuple[str]:
+    def _get_auth(dot_env: bool) -> Tuple[str]:
         """Get AppEEARS authentication informatiion from a ~/.netrc file.
 
         Returns:
             Tuple[str]: A tuple with (username, password) stored in it.
         """
+
+        if dot_env:
+            username = os.getenv("EarthdataLogin")
+            password = os.getenv("EarthdataPassword")
+            return username, password
+
         username = (
             subprocess.check_output(
                 """awk '/login/ { print $2 }' ~/.netrc""", shell=True

@@ -7,21 +7,25 @@ services:
         image: neo4j:latest
         # user: "1001:1001"
         volumes:
-          - /neo4j/data:/data 
-          - /neo4j/logs:/logs 
-          - /neo4j/import:/var/lib/neo4j/import 
-          - /neo4j/plugins:/plugins 
+          # - /neo4j/data:/data 
+          # - /neo4j/logs:/logs 
+          # - /neo4j/import:/var/lib/neo4j/import 
+          # - /neo4j/plugins:/plugins 
+          - $HOME/neo4j/data:/data 
+          - $HOME/neo4j/logs:/logs 
+          - $HOME/neo4j/import:/var/lib/neo4j/import 
+          - $HOME/neo4j/plugins:/plugins 
         ports:
           - "7474:7474"
           - "7687:7687"
         env_file:
-          - ./.env
+          - .env
 
-    # mms:
-    #     container_name: mms
-    #     stdin_open: true # docker run -i
-    #     tty: true # docker run -t
-    #     restart: always
-    #     build: .
-    #     networks:
-    #         - web
+    update:
+        container_name: update
+        restart: always
+        volumes:
+          - ./log.txt:/setup/log.txt
+        build: .
+        env_file:
+          - .env

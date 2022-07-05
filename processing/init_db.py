@@ -8,7 +8,7 @@ load_dotenv()
 conn = MesonetSatelliteDB(
     uri=os.getenv("Neo4jURI"),
     user=os.getenv("Neo4jUser"),
-    password=os.getenv("Neo4jPassword")
+    password=os.getenv("Neo4jPassword"),
 )
 
 conn.init_db_indices()
