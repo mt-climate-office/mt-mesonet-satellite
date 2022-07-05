@@ -49,6 +49,10 @@ class Session:
             password = os.getenv("EarthdataPassword")
             return username, password
 
+        assert (
+            Path.home() / ".netrc"
+        ).exists(), "If you don't provide an Earthdata Search login, you must have your login credentials stored in the ~/.netrc file."
+
         username = (
             subprocess.check_output(
                 """awk '/login/ { print $2 }' ~/.netrc""", shell=True
@@ -81,10 +85,7 @@ class Session:
             Dict[str, str]: A dictionary containing authentication token to use the API.
         """
         if not username or not password:
-            assert (
-                Path.home() / ".netrc"
-            ).exists(), "If you don't provide an Earthdata Search login, you must have your login credentials stored in the ~/.netrc file."
-            username, password = self._get_auth()
+            username, password = self._get_auth(self.dot_env)
         response = requests.post(
             "https://appeears.earthdatacloud.nasa.gov/api/login",
             auth=(username, password),
