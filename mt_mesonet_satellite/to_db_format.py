@@ -6,7 +6,7 @@ import numpy as np
 
 
 def to_db_format(
-    f: Union[str, Path],
+    f: Union[str, Path, pd.DataFrame],
     neo4j_pth: Union[str, Path] = "/var/lib/neo4j/import/",
     out_name: Optional[str] = None,
     write=False,
@@ -20,7 +20,7 @@ def to_db_format(
         neo4j_pth (Union[str, Path], optional): Neo4j import directory location. Defaults to "/var/lib/neo4j/import/".
     """
 
-    dat = pd.read_csv(f)
+    dat = pd.read_csv(f) if not isinstance(f, pd.DataFrame) else f
     dat = dat.assign(Date=pd.to_datetime(dat["Date"], utc=True))
     dat = dat.assign(
         Date=(dat["Date"] - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta("1s")
