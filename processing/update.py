@@ -4,7 +4,9 @@ from mt_mesonet_satellite import operational_update, MesonetSatelliteDB, Session
 import logging
 import os
 from neo4j.exceptions import ConfigurationError
+from dotenv import load_dotenv
 
+load_dotenv("/setup/.env")
 
 logging.basicConfig(
     level=logging.DEBUG,
