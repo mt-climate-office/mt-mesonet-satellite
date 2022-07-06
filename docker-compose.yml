@@ -22,6 +22,8 @@ services:
         restart: always
         volumes:
           - ./log.txt:/setup/log.txt
+        ports: 
+          - "7687:7687"
         build: .
         env_file:
           - .env
