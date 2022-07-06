@@ -8,7 +8,6 @@ WORKDIR /setup
 COPY ./processing/cronjob /etc/cron.d/cronjob
 
 COPY . /setup/
-RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip install .
 
 # Give execution rights on the cron job
