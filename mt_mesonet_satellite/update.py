@@ -107,7 +107,7 @@ def wait_on_tasks(
 
     if not Path(dirname).exists():
         dirname.mkdir(exist_ok=False)
-
+    time.sleep(wait)
     while True:
         indices = []
         for idx, task in enumerate(tasks):
@@ -124,7 +124,6 @@ def wait_on_tasks(
             break
 
         logging.info(f"Waiting {wait} seconds to try again...")
-        time.sleep(wait)
 
 
 def update_db(dirname: Union[Path, str], conn=MesonetSatelliteDB):
@@ -144,5 +143,5 @@ def operational_update(conn, session):
 
     with tempfile.TemporaryDirectory() as dirname:
         tasks = start_missing_tasks(conn=conn, session=session, start_now=True)
-        wait_on_tasks(tasks=tasks, session=session, dirname=dirname, wait=300)
+        wait_on_tasks(tasks=tasks, session=session, dirname=dirname, wait=3600)
         update_db(dirname=dirname, conn=conn)

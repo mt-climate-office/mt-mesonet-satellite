@@ -1,35 +1,55 @@
 from mt_mesonet_satellite import Point
 from mt_mesonet_satellite import Session
 from mt_mesonet_satellite import Task, Submit
-from mt_mesonet_satellite import list_task, clean_all, to_db_format
-
+from mt_mesonet_satellite import list_task, clean_all, to_db_format, wait_on_tasks
 
 import datetime as dt
 
-session = Session()
+session = Session(dot_env=False)
+stations = Point.from_mesonet()
+
+m16_aqua = Submit(
+    name="aqua_m16_backfill",
+    products=[
+        "MYD16A2GF.061",
+        "MYD16A2GF.061",
+        "MYD17A2HGF.061",
+    ],
+    layers=[
+        "ET_500m",
+        "PET_500m",
+        "Gpp_500m",
+    ],
+    start_date="2000-01-01",
+    end_date=str(dt.date.today()),
+    geom=stations,
+) 
+
+m16_terra = Submit(
+    name="terra_m16_backfill",
+    products=[
+        "MOD16A2GF.061",
+        "MOD16A2GF.061",
+        "MOD17A2HGF.061",
+    ],
+    layers=[
+        "ET_500m",
+        "PET_500m",
+        "Gpp_500m",
+    ],
+    start_date="2000-01-01",
+    end_date=str(dt.date.today()),
+    geom=stations,
+) 
+
+tasks = [m16_aqua, m16_terra]
+[x.launch(session.token) for x in tasks]
+
 tasks = list_task(session.token)
-tasks = tasks[:-5]
+tasks = [x for x in tasks if 'backfill' in x['task_name']]
 tasks = [Task.from_response(x) for x in tasks]
-
 for task in tasks:
-    task.download(
-        "/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628",
-        session.token,
-        False,
-    )
-
-clean_all(
-    save="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/master_db.csv",
-    dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/update_20220628",
-)
-to_db_format(
-    f="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data/master_db.csv",
-    neo4j_pth="/Users/colinbrust/data/neo4j/import",
-    out_name="data_init",
-    write=True,
-    split=True,
-)
-
+    task.download(dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data", token=session.token)
 # stations = Point.from_mesonet()
 # session = Session()
 # aqua = Submit(

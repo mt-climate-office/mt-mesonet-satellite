@@ -142,6 +142,13 @@ class Task:
             f_list = [x for x in bundle_response["files"] if x["file_type"] == "csv"]
             for f in f_list:
                 self._write_file(f, dirname, token)
+    
+    def delete(self, token):
+        response = requests.delete(
+            'https://appeears.earthdatacloud.nasa.gov/api/task/{0}'.format(self.task_id), 
+            headers={'Authorization': 'Bearer {0}'.format(token)}
+        )
+        return response.status_code
 
 
 @dataclass

@@ -76,7 +76,7 @@ def to_db_format(
     )
 
     dat = dat.drop_duplicates()
-
+    dat = dat.reset_index(drop=True)
     print("Data succesfully reformatted.")
     if write:
         if split:
