@@ -1,19 +1,16 @@
 #!/usr/local/bin/python
 
-from mt_mesonet_satellite import operational_update, MesonetSatelliteDB, Session
 import logging
 import os
-from neo4j.exceptions import ConfigurationError
+
 from dotenv import load_dotenv
+from neo4j.exceptions import ConfigurationError
+
+from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
 
 load_dotenv("/setup/.env")
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename="/setup/log.txt",
-    filemode="w",
-    format="%(asctime)s %(message)s",
-)
+logger = logging.getLogger("mt_mesonet_satellite")
 
 try:
     conn = MesonetSatelliteDB(

@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-import pandas as pd
-from typing import List, Dict, Union
-import geopandas as gpd
 from pathlib import Path
+from typing import Dict, List, Union
+
+import geopandas as gpd
+import pandas as pd
 
 
 @dataclass
@@ -39,7 +41,9 @@ class Point:
         Returns:
             Point: Point class of Mesonet stations.
         """
-        dat = pd.read_csv("https://mesonet.climate.umt.edu/api/v2/stations/?type=csv")
+        dat = pd.read_csv(
+            "https://mesonet.climate.umt.edu/api/v2/stations/?type=csv"
+        )
         return cls(
             lats=dat.latitude.tolist(),
             lons=dat.longitude.tolist(),

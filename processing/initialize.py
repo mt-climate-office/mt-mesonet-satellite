@@ -1,9 +1,15 @@
-from mt_mesonet_satellite import Point
-from mt_mesonet_satellite import Session
-from mt_mesonet_satellite import Task, Submit
-from mt_mesonet_satellite import list_task, clean_all, to_db_format, wait_on_tasks
-
 import datetime as dt
+
+from mt_mesonet_satellite import (
+    Point,
+    Session,
+    Submit,
+    Task,
+    clean_all,
+    list_task,
+    to_db_format,
+    wait_on_tasks,
+)
 
 session = Session(dot_env=False)
 stations = Point.from_mesonet()
@@ -23,7 +29,7 @@ m16_aqua = Submit(
     start_date="2000-01-01",
     end_date=str(dt.date.today()),
     geom=stations,
-) 
+)
 
 m16_terra = Submit(
     name="terra_m16_backfill",
@@ -40,16 +46,19 @@ m16_terra = Submit(
     start_date="2000-01-01",
     end_date=str(dt.date.today()),
     geom=stations,
-) 
+)
 
 tasks = [m16_aqua, m16_terra]
 [x.launch(session.token) for x in tasks]
 
 tasks = list_task(session.token)
-tasks = [x for x in tasks if 'backfill' in x['task_name']]
+tasks = [x for x in tasks if "backfill" in x["task_name"]]
 tasks = [Task.from_response(x) for x in tasks]
 for task in tasks:
-    task.download(dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data", token=session.token)
+    task.download(
+        dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data",
+        token=session.token,
+    )
 # stations = Point.from_mesonet()
 # session = Session()
 # aqua = Submit(

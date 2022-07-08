@@ -1,8 +1,9 @@
-from neo4j import GraphDatabase
-import pandas as pd
 from pathlib import Path
-from neo4j.exceptions import ConstraintError
 from typing import Union
+
+import pandas as pd
+from neo4j import GraphDatabase
+from neo4j.exceptions import ConstraintError
 
 
 class MesonetSatelliteDB:
@@ -84,7 +85,9 @@ class MesonetSatelliteDB:
         gen = dat.iterrows()
         for idx, row in gen:
             if idx % 10 == 0:
-                print(f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded")
+                print(
+                    f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded"
+                )
             try:
                 with self.driver.session() as session:
                     session.write_transaction(self._post_data, **row.to_dict())
@@ -134,7 +137,9 @@ class MesonetSatelliteDB:
 
     @staticmethod
     def _init_index(tx):
-        tx.run("CREATE INDEX timestampIndex FOR (o:OBSERVES) on (o.timestamp); ")
+        tx.run(
+            "CREATE INDEX timestampIndex FOR (o:OBSERVES) on (o.timestamp); "
+        )
         tx.run(
             "CREATE CONSTRAINT obsIdConstraint "
             "FOR (obs:Observation) "

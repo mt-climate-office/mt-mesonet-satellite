@@ -1,7 +1,9 @@
-from mt_mesonet_satellite import MesonetSatelliteDB
+import os
+
 import pandas as pd
 from dotenv import load_dotenv
-import os
+
+from mt_mesonet_satellite import MesonetSatelliteDB
 
 load_dotenv()
 

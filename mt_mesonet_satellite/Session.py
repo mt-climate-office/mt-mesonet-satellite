@@ -1,9 +1,10 @@
-from dataclasses import dataclass, field
-import requests
-import subprocess
-from pathlib import Path
-from typing import Dict, Optional, Tuple, List
 import os
+import subprocess
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import requests
 
 
 @dataclass

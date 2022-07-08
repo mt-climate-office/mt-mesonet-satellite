@@ -1,8 +1,9 @@
 import argparse
-import pandas as pd
 from pathlib import Path
-from typing import Union, Optional
+from typing import Optional, Union
+
 import numpy as np
+import pandas as pd
 
 
 def to_db_format(
@@ -23,7 +24,8 @@ def to_db_format(
     dat = pd.read_csv(f) if not isinstance(f, pd.DataFrame) else f
     dat = dat.assign(Date=pd.to_datetime(dat["Date"], utc=True))
     dat = dat.assign(
-        Date=(dat["Date"] - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta("1s")
+        Date=(dat["Date"] - pd.Timestamp("1970-01-01", tz="UTC"))
+        // pd.Timedelta("1s")
     )
     dat = dat.rename(
         columns={"ID": "station", "Date": "timestamp", "product": "platform"}
@@ -65,8 +67,12 @@ def to_db_format(
             dat.value,
         )
     )
-    dat = dat.assign(value=np.where(dat.element == "ET", dat.value / 8, dat.value))
-    dat = dat.assign(value=np.where(dat.element == "PET", dat.value / 8, dat.value))
+    dat = dat.assign(
+        value=np.where(dat.element == "ET", dat.value / 8, dat.value)
+    )
+    dat = dat.assign(
+        value=np.where(dat.element == "PET", dat.value / 8, dat.value)
+    )
     dat = dat.assign(
         units=np.where(
             (dat.platform != "SPL4CMDL.006") & (dat.element == "GPP"),
@@ -98,7 +104,10 @@ if __name__ == "__main__":
         "-f", "--file", type=Path, help="master_db.csv file to reformat"
     )
     parser.add_argument(
-        "-od", "--outdir", type=Path, help="Neo4j directory to save dataframe to."
+        "-od",
+        "--outdir",
+        type=Path,
+        help="Neo4j directory to save dataframe to.",
     )
     parser.add_argument(
         "-on",
