@@ -1,4 +1,4 @@
 # must be ended with a new line "LF" (Unix) and not "CRLF" (Windows)
 # 14 UTC = 8 Mountain Time
-0 14 * * * /setup/processing/update.py
+0 13 * * * /setup/processing/update.py
 # An empty line is required at the end of this file for a valid cron file.
