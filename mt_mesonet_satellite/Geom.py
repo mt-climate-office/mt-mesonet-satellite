@@ -41,9 +41,7 @@ class Point:
         Returns:
             Point: Point class of Mesonet stations.
         """
-        dat = pd.read_csv(
-            "https://mesonet.climate.umt.edu/api/v2/stations/?type=csv"
-        )
+        dat = pd.read_csv("https://mesonet.climate.umt.edu/api/v2/stations/?type=csv")
         return cls(
             lats=dat.latitude.tolist(),
             lons=dat.longitude.tolist(),

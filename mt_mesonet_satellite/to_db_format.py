@@ -24,8 +24,7 @@ def to_db_format(
     dat = pd.read_csv(f) if not isinstance(f, pd.DataFrame) else f
     dat = dat.assign(Date=pd.to_datetime(dat["Date"], utc=True))
     dat = dat.assign(
-        Date=(dat["Date"] - pd.Timestamp("1970-01-01", tz="UTC"))
-        // pd.Timedelta("1s")
+        Date=(dat["Date"] - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta("1s")
     )
     dat = dat.rename(
         columns={"ID": "station", "Date": "timestamp", "product": "platform"}
@@ -46,6 +45,10 @@ def to_db_format(
                 "PET_500m": "PET",
                 "_500m_16_days_EVI": "EVI",
                 "_500m_16_days_NDVI": "NDVI",
+                "_500_m_16_days_EVI": "EVI",
+                "_500_m_16_days_NDVI": "NDVI",
+                "EVAPOTRANSPIRATION_ALEXI_ETdaily": "ET",
+                "EVAPOTRANSPIRATION_PT_JPL_ETdaily": "ET",
             }
         }
     )
@@ -68,11 +71,13 @@ def to_db_format(
         )
     )
     dat = dat.assign(
-        value=np.where(dat.element == "ET", dat.value / 8, dat.value)
+        value=np.where(
+            (dat.element == "ET") & (dat.platform != "ECO3ETALEXI.001"),
+            dat.value / 8,
+            dat.value,
+        )
     )
-    dat = dat.assign(
-        value=np.where(dat.element == "PET", dat.value / 8, dat.value)
-    )
+    dat = dat.assign(value=np.where(dat.element == "PET", dat.value / 8, dat.value))
     dat = dat.assign(
         units=np.where(
             (dat.platform != "SPL4CMDL.006") & (dat.element == "GPP"),

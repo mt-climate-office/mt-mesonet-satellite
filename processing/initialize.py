@@ -1,138 +1,104 @@
+import argparse
 import datetime as dt
+import os
+import tempfile
+
+from dotenv import load_dotenv
 
 from mt_mesonet_satellite import (
+    MesonetSatelliteDB,
     Point,
     Session,
     Submit,
-    Task,
     clean_all,
-    list_task,
     to_db_format,
     wait_on_tasks,
 )
 
-session = Session(dot_env=False)
-stations = Point.from_mesonet()
+if __name__ == "__main__":
 
-m16_aqua = Submit(
-    name="aqua_m16_backfill",
-    products=[
-        "MYD16A2GF.061",
-        "MYD16A2GF.061",
-        "MYD17A2HGF.061",
-    ],
-    layers=[
-        "ET_500m",
-        "PET_500m",
-        "Gpp_500m",
-    ],
-    start_date="2000-01-01",
-    end_date=str(dt.date.today()),
-    geom=stations,
-)
-
-m16_terra = Submit(
-    name="terra_m16_backfill",
-    products=[
-        "MOD16A2GF.061",
-        "MOD16A2GF.061",
-        "MOD17A2HGF.061",
-    ],
-    layers=[
-        "ET_500m",
-        "PET_500m",
-        "Gpp_500m",
-    ],
-    start_date="2000-01-01",
-    end_date=str(dt.date.today()),
-    geom=stations,
-)
-
-tasks = [m16_aqua, m16_terra]
-[x.launch(session.token) for x in tasks]
-
-tasks = list_task(session.token)
-tasks = [x for x in tasks if "backfill" in x["task_name"]]
-tasks = [Task.from_response(x) for x in tasks]
-for task in tasks:
-    task.download(
-        dirname="/Users/colinbrust/projects/mco/mt-mesonet-satellite/mt_mesonet_satellite/data",
-        token=session.token,
+    parser = argparse.ArgumentParser(
+        "Script to initialize the satellite indicators Neo4j database."
     )
-# stations = Point.from_mesonet()
-# session = Session()
-# aqua = Submit(
-#     name="mesonet_aqua_download",
-#     products=[
-#         "MYD13A1.061",
-#         "MYD13A1.061",
-#         "MYD15A2H.061",
-#         "MYD15A2H.061",
-#         "MYD16A2.061",
-#         "MYD16A2.061",
-#         "MYD17A2H.061",
-#     ],
-#     layers=[
-#         "_500m_16_days_NDVI",
-#         "_500m_16_days_EVI",
-#         "Fpar_500m",
-#         "Lai_500m",
-#         "ET_500m",
-#         "PET_500m",
-#         "Gpp_500m",
-#     ],
-#     start_date="2022-06-01",
-#     end_date=str(dt.date.today()),
-#     geom=stations,
-# )
+    parser.add_argument(
+        "-e", "--env", type=str, default=".env", help="Path to your .env file."
+    )
+    parser.add_argument(
+        "-ul",
+        "--neo4jpth",
+        type=str,
+        default="/neo4j/import",
+        help="Path to the linked Neo4j 'import' volume.",
+    )
 
-# terra = Submit(
-#     name="mesonet_terra_download",
-#     products=[
-#         "MOD13A1.061",
-#         "MOD13A1.061",
-#         "MOD15A2H.061",
-#         "MOD15A2H.061",
-#         "MOD16A2.061",
-#         "MOD16A2.061",
-#         "MOD17A2H.061",
-#     ],
-#     layers=[
-#         "_500m_16_days_NDVI",
-#         "_500m_16_days_EVI",
-#         "Fpar_500m",
-#         "Lai_500m",
-#         "ET_500m",
-#         "PET_500m",
-#         "Gpp_500m",
-#     ],
-#     start_date="2000-01-01",
-#     end_date=str(dt.date.today()),
-#     geom=stations,
-# )
+    args = parser.parse_args()
 
+    # If your .env file isn't in the current directory, put the path to
+    load_dotenv(args.env)
 
-# smap = Submit(
-#     name="mesonet_smap_download",
-#     products=[
-#         "SPL4CMDL.006",
-#         "SPL4SMGP.006",
-#         "SPL4SMGP.006",
-#         "SPL4SMGP.006",
-#         "SPL4SMGP.006",
-#     ],
-#     layers=[
-#         "GPP_gpp_mean",
-#         "Geophysical_Data_sm_surface",
-#         "Geophysical_Data_sm_surface_wetness",
-#         "Geophysical_Data_sm_rootzone",
-#         "Geophysical_Data_sm_rootzone_wetness",
-#     ],
-#     start_date="2000-01-01",
-#     end_date=str(dt.date.today()),
-#     geom=stations,
-# )
+    # Initialize the indices and constraints for the database.
+    conn = MesonetSatelliteDB(
+        uri=os.getenv("Neo4jURI"),
+        user=os.getenv("Neo4jUser"),
+        password=os.getenv("Neo4jPassword"),
+    )
+    conn.init_db_indices()
 
-# aqua.launch(token=session.token)
-# terra.launch(token=session.token)
-# smap.launch(token=session.token)
+    # Begin an AppEEARS session.
+    session = Session(dot_env=False)
+
+    # Initialize point geometries from mesonet station locations.
+    # You can also initialize from a .geojson file with Point.from_geojson("/path/to/file.geojson")
+    stations = Point.from_mesonet()
+
+    # Make a Submit request object for VIIRS EVI and NDVI data.
+    viirs = Submit(
+        name="viirs_backfill",
+        products=[
+            "VNP13A1.001",
+            "VNP13A1.001",
+        ],
+        layers=[
+            "_500_m_16_days_EVI",
+            "_500_m_16_days_NDVI",
+        ],
+        start_date="2020-01-01",
+        end_date=str(dt.date.today()),
+        geom=stations,
+    )
+
+    # Start the request. The processing of this could take a while.
+    viirs.launch(session.token)
+
+    with tempfile.TemporaryDirectory() as dirname:
+        # Wait for the VIIRS task to complete and save it to the tempdir.
+        # In the below function, "wait" is the number of seconds to wait before
+        # checking if the task is complete.
+        wait_on_tasks(tasks=viirs, session=session, dirname=dirname, wait=3600)
+        # Clean the processed data.
+        cleaned = clean_all(dirname, False)
+
+        # On linux OS, there can be permissions errors with the linked Docker volumes.
+        # If this occurs, manually post the entries to the db (This is slower than using
+        # the builtin Neo4j CSV reader).
+        try:
+            formatted = to_db_format(
+                f=cleaned,
+                neo4j_pth=args.neo4jpth,
+                out_name="data_init",
+                write=True,
+                split=True,
+            )
+
+            # Upload the data to the database using the Neo4j CSV reader.
+            conn.init_db(dirname)
+        except (FileNotFoundError, PermissionError) as e:
+            formatted = to_db_format(
+                f=cleaned, neo4j_pth=None, out_name=None, write=False, split=False
+            )
+
+            # Upload to database row by row.
+            conn.post(formatted)
+
+    session.logout()
+    conn.close()

@@ -12,9 +12,7 @@ from .Geom import Point, Poly
 class PendingTaskError(Exception):
     """Raised when download is attempted on running task."""
 
-    def __init__(
-        self, message="Task still running. Try downloading again later."
-    ):
+    def __init__(self, message="Task still running. Try downloading again later."):
         self.message = message
         super().__init__(self.message)
 
@@ -93,9 +91,7 @@ class Task:
         self.status = status_response["status"]
         return self.status
 
-    def _write_file(
-        self, f: Dict[str, Any], dirname: Union[Path, str], token: str
-    ):
+    def _write_file(self, f: Dict[str, Any], dirname: Union[Path, str], token: str):
         """Write data from a completed task to disk.
 
         Args:
@@ -118,9 +114,7 @@ class Task:
             for data in response.iter_content(chunk_size=8192):
                 con.write(data)
 
-    def download(
-        self, dirname: Union[Path, str], token: str, download_all=False
-    ):
+    def download(self, dirname: Union[Path, str], token: str, download_all=False):
         """Download all files associated with a task
 
         Args:
@@ -147,9 +141,7 @@ class Task:
             for f in bundle_response["files"]:
                 self._write_file(f, dirname, token)
         else:
-            f_list = [
-                x for x in bundle_response["files"] if x["file_type"] == "csv"
-            ]
+            f_list = [x for x in bundle_response["files"] if x["file_type"] == "csv"]
             for f in f_list:
                 self._write_file(f, dirname, token)
 

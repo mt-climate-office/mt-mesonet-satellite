@@ -34,9 +34,7 @@ class Cleaner:
         parts = self.f.stem.split("-")
         self.product = f"{parts[-3]}.{parts[-2]}"
         self.raw = pd.read_csv(self.f)
-        self.raw.columns = self.raw.columns.str.replace(
-            f"{parts[-3]}_{parts[-2]}_", ""
-        )
+        self.raw.columns = self.raw.columns.str.replace(f"{parts[-3]}_{parts[-2]}_", "")
         self.meta = Product(self.product)
         self.layers = {
             k: v for k, v in self.meta.layers.items() if k in self.raw.columns
@@ -78,9 +76,7 @@ class Cleaner:
         return dat
 
     @staticmethod
-    def _clean_subdaily(
-        dat: pd.DataFrame, to_daily: bool = True
-    ) -> pd.DataFrame:
+    def _clean_subdaily(dat: pd.DataFrame, to_daily: bool = True) -> pd.DataFrame:
         """Cleans subdaily data as they are formatted rather strangely by AppEEARS. Can optionally aggregate to daily means.
 
         Args:

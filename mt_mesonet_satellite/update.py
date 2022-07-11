@@ -19,12 +19,16 @@ from .to_db_format import to_db_format
 
 RM_STRINGS = ["_pft", "_std_", "StdDev"]
 
+f = Path("/setup/log.txt")
+f = f if f.exists() else "./log.txt"
+
 logging.basicConfig(
     level=logging.INFO,
-    filename="/setup/log.txt",
+    filename=f,
     filemode="w",
     format="%(asctime)s %(message)s",
 )
+
 
 def find_missing_data(conn: MesonetSatelliteDB) -> pd.DataFrame:
     """Looks for the last timestamp for each product and returns the information in a dataframe
@@ -61,9 +65,7 @@ def start_missing_tasks(
         layers = []
         for e in sub.element.values:
             vals = [
-                k
-                for k, v in p.layers.items()
-                if e.lower() in k.lower() and not v.IsQA
+                k for k, v in p.layers.items() if e.lower() in k.lower() and not v.IsQA
             ]
             vals = [n for n in vals if not re.search("|".join(RM_STRINGS), n)]
             layers = layers + vals
@@ -94,9 +96,7 @@ def start_missing_tasks(
 
     if start_now:
         [task.launch(session.token) for task in tasks]
-    logging.info(
-        "New tasks have been launched. Waiting for them to complete..."
-    )
+    logging.info("New tasks have been launched. Waiting for them to complete...")
 
     return tasks
 
