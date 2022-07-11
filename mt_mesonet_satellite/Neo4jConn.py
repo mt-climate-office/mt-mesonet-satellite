@@ -26,7 +26,7 @@ class MesonetSatelliteDB:
         with self.driver.session() as session:
             session.write_transaction(self._init_index)
 
-    def init_db(self, f_dir: Union[str, Path]):
+    def init_db(self, f_dir: Union[str, Path], use_path: bool=False):
         """Initialize the Neo4j database using satellite data derived from the to_db_format.py script.
 
         Args:
@@ -35,7 +35,7 @@ class MesonetSatelliteDB:
         with self.driver.session() as session:
             # Had to break file into multiple to keep from breaking.
             for f in Path(f_dir).glob("data_init*"):
-                f_path = f"file:///{f.name}"
+                f_path = str(f) if use_path else f"file:///{f.name}"
                 session.write_transaction(self._init_db, f_path)
 
     def query(

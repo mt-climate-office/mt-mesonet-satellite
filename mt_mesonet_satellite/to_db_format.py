@@ -64,6 +64,13 @@ def to_db_format(
     dat = dat.assign(units=dat.units.fillna("unitless"))
     dat = dat.assign(value=dat.value.fillna(-9999))
     dat = dat.assign(
+        units=np.where(
+            (dat.units == "EVI") | (dat.units == "NDVI"),
+            "unitless", 
+            dat.units
+        )
+    )
+    dat = dat.assign(
         value=np.where(
             (dat.platform != "SPL4CMDL.006") & (dat.element == "GPP"),
             (dat.value * 1000) / 8,
