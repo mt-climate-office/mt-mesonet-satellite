@@ -23,9 +23,8 @@ or using poetry:
 
 `poetry add git+https://github.com/colinbrust/mt-mesonet-satellite.git#main`
 
-Below is an example of how to setup a database and perform daily downloads of data from scratch. First, stand up the Neo4j database install package. 
+Below is an example of how to setup a database and perform daily downloads of data from scratch. First, stand up the Neo4j database and install the package. 
 
-`docker compose up --build -d`.
 ```bash
 git clone https://github.com/mt-climate-office/mt-mesonet-satellite.git
 
