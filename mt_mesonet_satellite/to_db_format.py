@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 
 def to_db_format(
@@ -65,9 +66,7 @@ def to_db_format(
     dat = dat.assign(value=dat.value.fillna(-9999))
     dat = dat.assign(
         units=np.where(
-            (dat.units == "EVI") | (dat.units == "NDVI"),
-            "unitless", 
-            dat.units
+            (dat.units == "EVI") | (dat.units == "NDVI"), "unitless", dat.units
         )
     )
     dat = dat.assign(
@@ -93,9 +92,12 @@ def to_db_format(
         )
     )
 
+    dat = dat[dat["element"] != "Geophysical_Data_sm_rootzone_pctl"]
+    dat = dat[dat["element"] != "_500_m_16_days_EVI2"]
+
     dat = dat.drop_duplicates()
     dat = dat.reset_index(drop=True)
-    print("Data succesfully reformatted.")
+    logger.info("Data successfully reformatted.")
     if write:
         if split:
             out_name = Path(f).stem if not out_name else out_name

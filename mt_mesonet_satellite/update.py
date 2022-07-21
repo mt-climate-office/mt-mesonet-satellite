@@ -1,5 +1,4 @@
 import datetime as dt
-import logging
 import re
 import tempfile
 import time
@@ -8,6 +7,7 @@ from pathlib import Path
 from typing import List, Union
 
 import pandas as pd
+from loguru import logger
 
 from .Clean import clean_all
 from .Geom import Point
@@ -17,19 +17,10 @@ from .Session import Session
 from .Task import PendingTaskError, Submit
 from .to_db_format import to_db_format
 
-RM_STRINGS = ["_pft", "_std_", "StdDev"]
-
-f = Path("/setup/log.txt")
-f = f if f.exists() else "./log.txt"
-
-logging.basicConfig(
-    level=logging.INFO,
-    filename=f,
-    filemode="w",
-    format="%(asctime)s %(message)s",
-)
+RM_STRINGS = ["_pft", "_std_", "StdDev", "_EVI2"]
 
 
+@logger.catch
 def find_missing_data(conn: MesonetSatelliteDB) -> pd.DataFrame:
     """Looks for the last timestamp for each product and returns the information in a dataframe
 
@@ -38,10 +29,11 @@ def find_missing_data(conn: MesonetSatelliteDB) -> pd.DataFrame:
     """
     dat = conn.get_latest()
     dat = dat.assign(date=dat.date + pd.to_timedelta(1, unit="D"))
-    logging.info("Found missing data. ")
+    logger.info("Found missing data.")
     return dat
 
 
+@logger.catch
 def start_missing_tasks(
     conn: MesonetSatelliteDB, session: Session, start_now: bool = True
 ) -> List[Submit]:
@@ -96,11 +88,12 @@ def start_missing_tasks(
 
     if start_now:
         [task.launch(session.token) for task in tasks]
-    logging.info("New tasks have been launched. Waiting for them to complete...")
+    logger.info("New tasks have been launched. Waiting for them to complete...")
 
     return tasks
 
 
+@logger.catch
 def wait_on_tasks(
     tasks: List[Submit],
     session: Session,
@@ -126,31 +119,32 @@ def wait_on_tasks(
             try:
                 task.download(dirname, session.token, False)
             except PendingTaskError:
-                logging.warning(f"{task.task_id} is still running...")
+                logger.warning(f"{task.task_id} is still running...")
                 indices.append(idx)
         try:
             getter = itemgetter(*indices)
             tasks = [*getter(tasks)]
         except TypeError as e:
-            logging.info("All tasks have completed.")
+            logger.info("All tasks have completed.")
             break
 
-        logging.info(f"Waiting {wait} seconds to try again...")
+        logger.info(f"Waiting {wait} seconds to try again...")
 
 
+@logger.catch
 def update_db(dirname: Union[Path, str], conn=MesonetSatelliteDB):
 
-    logging.info("Starting upload to Neo4j DB.")
+    logger.info("Starting upload to Neo4j DB.")
     cleaned = clean_all(dirname, False)
     formatted = to_db_format(
         f=cleaned, neo4j_pth=None, out_name=None, write=False, split=False
     )
     formatted.reset_index(drop=True, inplace=True)
     conn.post(formatted)
-    conn.close()
-    logging.info("Upload to Neo4j DB complete.")
+    logger.info("Upload to Neo4j DB complete.")
 
 
+@logger.catch
 def operational_update(conn, session):
 
     with tempfile.TemporaryDirectory() as dirname:

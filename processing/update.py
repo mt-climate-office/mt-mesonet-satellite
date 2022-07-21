@@ -1,33 +1,54 @@
 #!/usr/local/bin/python
 
-import logging
 import os
+import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
+from loguru import logger
 from neo4j.exceptions import ConfigurationError
 
 from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
 
 load_dotenv("/setup/.env")
 
-logger = logging.getLogger("mt_mesonet_satellite")
+f = Path("/setup/file.log")
+f = str(f) if f.exists() else "./file.log"
 
-try:
-    conn = MesonetSatelliteDB(
-        uri=os.getenv("Neo4jURI"),
-        user=os.getenv("Neo4jUser"),
-        password=os.getenv("Neo4jPassword"),
-    )
-except ConfigurationError as e:
-    logging.error(e)
-    logging.error("Unable to connect to Neo4j DB.")
+logger.add(
+    sys.stderr,
+    format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
+    filter="loguru_demo",
+    level="INFO",
+)
+logger.add(
+    f,
+    format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
+    filter="loguru_demo",
+    level="INFO",
+    rotation="100 MB",
+)
+logger.enable("mt_mesonet_satellite")
 
-try:
-    session = Session(dot_env=True)
-except AssertionError as e:
-    logging.error(e)
+if __name__ == "__main__":
 
-operational_update(conn=conn, session=session)
+    try:
+        conn = MesonetSatelliteDB(
+            uri=os.getenv("Neo4jURI"),
+            user=os.getenv("Neo4jUser"),
+            password=os.getenv("Neo4jPassword"),
+        )
+    except ConfigurationError as e:
+        logger.exception(e)
+        logger.exception("Unable to connect to Neo4j DB.")
 
-session.logout()
-conn.close()
+    try:
+        session = Session(dot_env=True)
+    except AssertionError as e:
+        logger.exception(e)
+
+    try:
+        operational_update(conn=conn, session=session)
+    finally:
+        session.logout()
+        conn.close()

@@ -44,7 +44,7 @@ pip install .
 Next, run the initialize.py script to download some example data. The initialize.py script downloads VIIRS NDVI and EVI data. You can explore other datasets to download at [https://appeears.earthdatacloud.nasa.gov/products](https://appeears.earthdatacloud.nasa.gov/products):
 
 ```bash
-python ./processing/update.py
+python ./processing/initialize.py
 ```
 
 Once the data have been uploaded into the database, you can start the Docker container automatically downloads data every day:

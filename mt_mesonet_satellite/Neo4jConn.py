@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Union
 
 import pandas as pd
+from loguru import logger
 from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
 
@@ -26,7 +27,7 @@ class MesonetSatelliteDB:
         with self.driver.session() as session:
             session.write_transaction(self._init_index)
 
-    def init_db(self, f_dir: Union[str, Path], use_path: bool=False):
+    def init_db(self, f_dir: Union[str, Path], use_path: bool = False):
         """Initialize the Neo4j database using satellite data derived from the to_db_format.py script.
 
         Args:
@@ -72,7 +73,8 @@ class MesonetSatelliteDB:
                     "units",
                 ]
             except ValueError as e:
-                print("No available data for this query.")
+                logger.exception(e)
+                logger.exception("No available data for this query.")
                 dat = pd.DataFrame()
             return dat
 
@@ -84,13 +86,14 @@ class MesonetSatelliteDB:
         """
         gen = dat.iterrows()
         for idx, row in gen:
-            if idx % 10 == 0:
-                print(f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded")
+            if idx % 1000 == 0:
+                status = f"{(idx/len(dat))*100:2.3f}% of New Observations Uploaded"
+                logger.info(status)
             try:
                 with self.driver.session() as session:
                     session.write_transaction(self._post_data, **row.to_dict())
             except ConstraintError as e:
-                print(e)
+                logger.exception(e)
 
     def get_latest(self):
         with self.driver.session() as session:
@@ -149,7 +152,6 @@ class MesonetSatelliteDB:
 
     @staticmethod
     def _init_db(tx, f_path):
-        print(f_path)
         tx.run(
             "LOAD CSV WITH HEADERS FROM $f_path AS line "
             "MERGE (station:Station {name: line.station}) "
