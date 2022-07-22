@@ -12,19 +12,17 @@ from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
 
 load_dotenv("/setup/.env")
 
-f = Path("/setup/file.log")
-f = str(f) if f.exists() else "./file.log"
+f = Path("/setup/info.log")
+f = str(f) if f.exists() else "./info.log"
 
 logger.add(
     sys.stderr,
     format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
-    filter="loguru_demo",
     level="INFO",
 )
 logger.add(
     f,
     format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
-    filter="loguru_demo",
     level="INFO",
     rotation="100 MB",
 )

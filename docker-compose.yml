@@ -24,7 +24,7 @@ services:
         container_name: update
         restart: always
         volumes:
-          - ./log.txt:/setup/log.txt
+          - ./info.log:/setup/info.log
         build: .
         env_file:
           - .env

@@ -18,7 +18,7 @@ RUN chmod 0744 /setup/processing/update.py
 
 # Apply cron job
 RUN crontab /etc/cron.d/cronjob
- 
+
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 RUN touch /setup/log.txt
