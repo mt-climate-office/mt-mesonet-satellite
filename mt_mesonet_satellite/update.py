@@ -17,7 +17,7 @@ from .Session import Session
 from .Task import PendingTaskError, Submit
 from .to_db_format import to_db_format
 
-RM_STRINGS = ["_pft", "_std_", "StdDev", "_EVI2"]
+RM_STRINGS = ["_pft", "_std_", "StdDev", "_EVI2", "_pctl"]
 
 
 @logger.catch

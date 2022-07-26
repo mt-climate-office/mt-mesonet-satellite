@@ -10,6 +10,9 @@ from neo4j.exceptions import ConfigurationError
 
 from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
 
+# from mt_mesonet_satellite import Task, Submit, clean_all, to_db_format, Product, Point
+
+
 load_dotenv("/setup/.env")
 
 f = Path("/setup/info.log")
