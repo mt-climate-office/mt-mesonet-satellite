@@ -2,7 +2,6 @@ import datetime as dt
 import re
 import tempfile
 import time
-from operator import itemgetter
 from pathlib import Path
 from typing import List, Union
 
@@ -113,22 +112,26 @@ def wait_on_tasks(
     if not Path(dirname).exists():
         dirname.mkdir(exist_ok=False)
     time.sleep(wait)
+
+    tasks = {x.task_id:x for x in tasks}
     while True:
-        indices = []
-        for idx, task in enumerate(tasks):
+        to_pop = []
+        for k, task in tasks.items():
             try:
                 task.download(dirname, session.token, False)
+                to_pop.append(k)
+                logger.info(f"Task {k} has completed and is downloaded.")
             except PendingTaskError:
-                logger.warning(f"{task.task_id} is still running...")
-                indices.append(idx)
-        try:
-            getter = itemgetter(*indices)
-            tasks = [*getter(tasks)]
-        except TypeError as e:
-            logger.info("All tasks have completed.")
+                logger.warning(f"{k} is still running...")
+
+        for k in to_pop:
+            tasks.pop(k)
+
+        if len(tasks) == 0:
             break
 
         logger.info(f"Waiting {wait} seconds to try again...")
+        time.sleep(wait)
 
 
 @logger.catch
