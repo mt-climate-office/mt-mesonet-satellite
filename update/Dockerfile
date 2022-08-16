@@ -2,7 +2,7 @@ FROM python:3.9-slim
 RUN apt-get update && \
     apt-get -y install curl && \
     apt-get -y install cron && \
-    && apt-get -y install git
+    apt-get -y install git
 
 # Set working directory
 WORKDIR /setup
@@ -14,21 +14,22 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
     poetry config virtualenvs.create false
 
 # Copy necessary files
-COPY ../pyproject.toml ../poetry.lock* /setup/
-COPY ../mt_mesonet_satellite/ /setup/mt_mesonet_satellite
-COPY ../processing/ /setup/processing
+COPY ./pyproject.toml ./poetry.lock* ./.env /setup/
+COPY ./mt_mesonet_satellite /setup/mt_mesonet_satellite
+COPY ./update /setup/update
 
 # Install packages.
 RUN poetry install --no-root --no-dev
+RUN pip install .
 
 # Copy cronjob to container
-COPY ./cronjob /etc/cron.d/cronjob
+RUN cp /setup/update/cronjob /etc/cron.d/cronjob
 
 # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/cronjob
 
 # Make update executable
-RUN chmod 0744 /setup/processing/update.py
+RUN chmod 0744 /setup/update/update.py
 
 # Apply cron job
 RUN crontab /etc/cron.d/cronjob

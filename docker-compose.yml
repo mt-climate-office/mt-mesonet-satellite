@@ -23,9 +23,9 @@ services:
     update:
         container_name: update
         restart: always
-        volumes:
-          - ./update/info.log:/setup/info.log
-        build: ./update
+        build:
+          context: ./ 
+          dockerfile: ./update/Dockerfile
         env_file:
           - .env
         networks:
