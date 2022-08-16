@@ -5,7 +5,7 @@ RUN apt-get update && \
 
 WORKDIR /setup
 
-COPY ./processing/cronjob /etc/cron.d/cronjob
+COPY ./cronjob /etc/cron.d/cronjob
 
 COPY . /setup/
 RUN pip install .

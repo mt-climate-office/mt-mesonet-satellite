@@ -1,4 +1,4 @@
 #!/bin/bash
 git pull origin main
-touch log.txt
+touch ./update/log.txt
 docker compose up --build -d

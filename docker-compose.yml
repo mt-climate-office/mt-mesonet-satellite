@@ -3,15 +3,15 @@ version: '3.9'
 services:
     neo4j:
         container_name: neo4j
-        restart: always
-        image: neo4j:latest
+        restart: on-failure
+        build: ./neo4j
         # user: "1001:1001"
         volumes:
           - /neo4j/data:/data 
           - /neo4j/logs:/logs 
           - /neo4j/import:/var/lib/neo4j/import 
           - /neo4j/plugins:/plugins
-          - /neo4j/dumps:/dumps/neo4j 
+          - /neo4j/dumps:/dumps/neo4j
         ports:
           - "7474:7474"
           - "7687:7687"
@@ -24,8 +24,8 @@ services:
         container_name: update
         restart: always
         volumes:
-          - ./info.log:/setup/info.log
-        build: .
+          - ./update/info.log:/setup/info.log
+        build: ./update
         env_file:
           - .env
         networks:
