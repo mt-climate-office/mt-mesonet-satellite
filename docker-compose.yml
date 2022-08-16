@@ -11,7 +11,7 @@ services:
           - /neo4j/logs:/logs 
           - /neo4j/import:/var/lib/neo4j/import 
           - /neo4j/plugins:/plugins
-          - /neo4j/dumps:/dumps/neo4j
+          - /neo4j/dumps:/dumps
         ports:
           - "7474:7474"
           - "7687:7687"
@@ -36,3 +36,11 @@ networks:
     driver: bridge
     ipam:
       driver: default
+
+# volumes:
+#     db-backups:
+#       driver: local
+#       driver_opts:
+#         type: nfs
+#         o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
+#         device: $nfsPath

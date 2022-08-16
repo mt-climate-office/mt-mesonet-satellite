@@ -6,6 +6,8 @@ RUN apt-get update && \
 COPY ./cronjob /etc/cron.d/cronjob
 COPY ./backup.sh /var/lib/neo4j/
 
+RUN mkdir -p /dumps/neo4j
+
 # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/cronjob
 RUN chmod 0744 /var/lib/neo4j/backup.sh

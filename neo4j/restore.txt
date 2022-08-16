@@ -1,0 +1,8 @@
+# To restore db, run this and then run the docker compose, making sure that 
+# the linked data volume is the same so the data are persisted between containers. 
+
+docker run --interactive --tty --rm \
+    --volume=$HOME/data/neo4j/data:/data \ 
+    --volume=$HOME/data/neo4j/dumps:/dumps \ 
+    neo4j:4.4.8 \
+neo4j-admin load --database=neo4j --from=/dumps/backup_20220816.dump
