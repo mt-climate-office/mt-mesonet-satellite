@@ -15,8 +15,8 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 
 # Copy necessary files
 COPY ../pyproject.toml ../poetry.lock* /setup/
-COPY ../mt_mesonet_satellite/ /setup/
-COPY ../processing/ /setup/
+COPY ../mt_mesonet_satellite/ /setup/mt_mesonet_satellite
+COPY ../processing/ /setup/processing
 
 # Install packages.
 RUN poetry install --no-root --no-dev
