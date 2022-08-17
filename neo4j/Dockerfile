@@ -5,14 +5,12 @@ RUN apt-get update && \
 
 # COPY ./cronjob /etc/cron.d/cronjob
 COPY ./backup.sh /opt/backup.sh
-COPY ./test.sh /opt/test.sh
 
 RUN mkdir -p /dumps/neo4j
 
 # Give execution rights on the cron job
 # RUN chmod 0644 /etc/cron.d/cronjob
 RUN chmod u+x /opt/backup.sh
-RUN chmod u+x /opt/test.sh
 
 # Apply cron job
 # RUN crontab /etc/cron.d/cronjob
