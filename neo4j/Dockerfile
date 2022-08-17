@@ -3,8 +3,8 @@ FROM neo4j:4.4.8-community
 RUN apt-get update && \
     apt-get -y install cron 
 
-COPY ./cronjob /etc/cron.d/cronjob
 COPY ./backup.sh /var/lib/neo4j/
+COPY entrypoint.sh /entrypoint.sh
 
 RUN mkdir -p /dumps/neo4j
 
@@ -20,4 +20,4 @@ RUN touch /var/log/cron.log
 
 # RUN service cron start
 
-CMD neo4j start && cron && tail -f /var/log/cron.log
+ENTRYPOINT [ "/entrypoint.sh" ]

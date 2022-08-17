@@ -1,4 +1,0 @@
-# 0 6 * * * /var/lib/neo4j/backup.sh
-12 19 * * * /var/lib/neo4j/backup.sh
-* * * * *   echo "Hello $(whoami)" >>/var/log/cron.log 2>&1
-#
