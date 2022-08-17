@@ -9,14 +9,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN mkdir -p /dumps/neo4j
 
 # Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/cronjob
 RUN chmod 0744 /var/lib/neo4j/backup.sh
-
-# Apply cron job
-RUN crontab /etc/cron.d/cronjob
-
-# Create the log file to be able to run tail
-RUN touch /var/log/cron.log
 
 # RUN service cron start
 
