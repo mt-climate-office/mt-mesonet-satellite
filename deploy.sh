@@ -1,4 +1,4 @@
 #!/bin/bash
 git pull origin main
-touch ./update/log.txt
 docker compose up --build -d
+docker exec -it neo4j service cron start

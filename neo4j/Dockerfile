@@ -25,4 +25,4 @@ RUN echo '* * * * * root bash -c "source $HOME/env.log; source /opt/test.sh"' >>
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 
-CMD cron && tail -f /var/log/cron.log
+CMD tail -f /var/log/cron.log
