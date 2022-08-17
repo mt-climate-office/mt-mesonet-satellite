@@ -18,6 +18,4 @@ RUN crontab /etc/cron.d/cronjob
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 
-RUN service cron start
-
-CMD neo4j start && tail -f /var/log/cron.log
+CMD cron && tail -f /var/log/cron.log

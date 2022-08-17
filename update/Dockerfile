@@ -16,11 +16,13 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 # Copy necessary files
 COPY ./pyproject.toml ./poetry.lock* ./.env /setup/
 COPY ./mt_mesonet_satellite /setup/mt_mesonet_satellite
-COPY ./update /setup/update
 
 # Install packages.
 RUN poetry install --no-root --no-dev
 RUN pip install .
+
+# Copy update scripts
+COPY ./update /setup/update
 
 # Copy cronjob to container
 RUN cp /setup/update/cronjob /etc/cron.d/cronjob
