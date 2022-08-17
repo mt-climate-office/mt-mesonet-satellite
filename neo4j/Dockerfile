@@ -9,8 +9,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN mkdir -p /dumps/neo4j
 
 # Give execution rights on the cron job
-RUN chmod 0744 /var/lib/neo4j/backup.sh
+RUN chmod +x /var/lib/neo4j/backup.sh
+RUN chmod +x /entrypoint.sh
 
-# RUN service cron start
-
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT ["/entrypoint.sh"]
