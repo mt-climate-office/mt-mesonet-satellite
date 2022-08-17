@@ -20,7 +20,6 @@ RUN env >> ~/env.log
 RUN echo 'PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' > /etc/crontab
 RUN echo 'SHELL=/bin/bash' >> /etc/crontab
 RUN echo '0 6 * * * root bash -c "source $HOME/env.log; source /opt/backup.sh"' >> /etc/crontab
-RUN echo '* * * * * root bash -c "source $HOME/env.log; source /opt/test.sh"' >> /etc/crontab
 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
