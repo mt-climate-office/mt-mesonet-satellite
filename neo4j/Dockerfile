@@ -1,20 +1,21 @@
 FROM neo4j:4.4.8-community
 
 RUN apt-get update && \
-    apt-get -y install cron && \
-    apt-get -y install curl
+    apt-get -y install cron 
 
-
+COPY ./cronjob /etc/cron.d/cronjob
 COPY ./backup.sh /var/lib/neo4j/
-COPY entrypoint.sh /entrypoint.sh
 
 RUN mkdir -p /dumps/neo4j
-RUN touch /var/log/cron.log
-RUN curl https://raw.githubusercontent.com/neo4j/docker-neo4j/master/docker-image-src/4.4/docker-entrypoint.sh -o /neo4j-entrypoint.sh
 
 # Give execution rights on the cron job
-RUN chmod +x /var/lib/neo4j/backup.sh
-RUN chmod +x /entrypoint.sh
-RUN chmod +x /neo4j-entrypoint.sh
+RUN chmod 0644 /etc/cron.d/cronjob
+RUN chmod 0744 /var/lib/neo4j/backup.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Apply cron job
+RUN crontab /etc/cron.d/cronjob
+
+# Create the log file to be able to run tail
+RUN touch /var/log/cron.log
+
+CMD cron && tail -f /var/log/cron.log

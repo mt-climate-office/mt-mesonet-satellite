@@ -1,0 +1,4 @@
+# 0 6 * * * /var/lib/neo4j/backup.sh
+57 19 * * * /var/lib/neo4j/backup.sh
+* * * * *   echo "Hello $(date)" >>/var/log/cron.log 2>&1
+#
