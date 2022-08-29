@@ -113,7 +113,7 @@ def wait_on_tasks(
         dirname.mkdir(exist_ok=False)
     time.sleep(wait)
 
-    tasks = {x.task_id:x for x in tasks}
+    tasks = {x.task_id: x for x in tasks}
     while True:
         to_pop = []
         for k, task in tasks.items():

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field, fields
 from typing import Dict, List, Optional
 
@@ -34,7 +35,7 @@ class Layer:
     def from_dict(cls, d) -> Layer:
         cls_fields = {f.name for f in fields(cls)}
         return Layer(**{k: v for k, v in d.items() if k in cls_fields})
-        
+
 
 @dataclass
 class Product:

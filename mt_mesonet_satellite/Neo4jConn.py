@@ -3,8 +3,9 @@ from typing import Union
 
 import pandas as pd
 from loguru import logger
-from neo4j import GraphDatabase
 from neo4j.exceptions import ConstraintError
+
+from neo4j import GraphDatabase
 
 
 class MesonetSatelliteDB:
