@@ -96,3 +96,21 @@ def backfill_station(station: str, conn: MesonetSatelliteDB) -> NoReturn:
         backfill_collocated(station, collocated_station, conn)
     else:
         backfill_isolated(station)
+
+
+# from dotenv import load_dotenv
+# import os
+
+# load_dotenv("../setup/.env")
+
+# conn = MesonetSatelliteDB(
+#     uri=os.getenv("Neo4jURI"),
+#     user=os.getenv("Neo4jUser"),
+#     password=os.getenv("Neo4jPassword"),
+# )
+
+# backfill_station("aceoilmo", conn)
+# backfill_station("acecoffe", conn)
+# backfill_station("acetosto", conn)
+
+# conn.close()
