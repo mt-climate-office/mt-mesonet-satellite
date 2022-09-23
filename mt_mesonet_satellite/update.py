@@ -3,7 +3,7 @@ import re
 import tempfile
 import time
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from loguru import logger
@@ -20,7 +20,7 @@ RM_STRINGS = ["_pft", "_std_", "StdDev", "_EVI2", "_pctl"]
 
 
 @logger.catch
-def find_missing_data(conn: MesonetSatelliteDB) -> pd.DataFrame:
+def find_missing_data(conn: MesonetSatelliteDB, backfill: bool=False) -> pd.DataFrame:
     """Looks for the last timestamp for each product and returns the information in a dataframe
 
     Returns:
@@ -28,13 +28,15 @@ def find_missing_data(conn: MesonetSatelliteDB) -> pd.DataFrame:
     """
     dat = conn.get_latest()
     dat = dat.assign(date=dat.date + pd.to_timedelta(1, unit="D"))
+    if backfill:
+        dat = dat.assign(date=pd.Timestamp("2000-01-01"))
     logger.info("Found missing data.")
     return dat
 
 
 @logger.catch
 def start_missing_tasks(
-    conn: MesonetSatelliteDB, session: Session, start_now: bool = True
+    conn: MesonetSatelliteDB, session: Session, start_now: bool = True, backfill: bool=False, stations: Optional[List]=None
 ) -> List[Submit]:
     """Finds the last data downloaded for each product and starts tasks to fill the missing data.
 
@@ -46,10 +48,12 @@ def start_missing_tasks(
     Returns:
         List[Submit]: List of tasks that will fill missing data.
     """
-    missing = find_missing_data(conn)
+    missing = find_missing_data(conn, backfill=backfill)
     products = list(set(missing["platform"]))
     products = [Product(x) for x in products]
-    geom = Point.from_mesonet()
+
+    geom = Point.from_mesonet(*stations) if stations else Point.from_mesonet()
+    
     tasks = []
     for p in products:
         sub = missing[missing["platform"] == p.product].reset_index(drop=True)
@@ -148,9 +152,9 @@ def update_db(dirname: Union[Path, str], conn=MesonetSatelliteDB):
 
 
 @logger.catch
-def operational_update(conn, session):
+def operational_update(conn, session, backfill: bool=False, stations: Optional[List]=None):
 
     with tempfile.TemporaryDirectory() as dirname:
-        tasks = start_missing_tasks(conn=conn, session=session, start_now=True)
+        tasks = start_missing_tasks(conn=conn, session=session, start_now=True, backfill=backfill, stations=stations)
         wait_on_tasks(tasks=tasks, session=session, dirname=dirname, wait=3600)
         update_db(dirname=dirname, conn=conn)

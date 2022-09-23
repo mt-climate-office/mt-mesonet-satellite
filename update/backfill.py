@@ -1,9 +1,36 @@
-import datetime as dt
+#!/usr/local/bin/python
+
+import os
+import argparse
+from pathlib import Path
+
+from dotenv import load_dotenv
+from loguru import logger
+from neo4j.exceptions import ConfigurationError
+import sys
 from typing import NoReturn
-
 import pandas as pd
+import datetime as dt
 
-from .Neo4jConn import MesonetSatelliteDB
+from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update, Point
+
+load_dotenv("/setup/.env")
+
+f = Path("/setup/info.log")
+f = str(f) if f.exists() else "./info.log"
+
+logger.add(
+    sys.stderr,
+    format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
+    level="INFO",
+)
+logger.add(
+    f,
+    format="{time:YYYY-MM-DD at HH:mm:ss} {level} {message}",
+    level="INFO",
+    rotation="100 MB",
+)
+logger.enable("mt_mesonet_satellite")
 
 ELEMENTS = [
     "NDVI",
@@ -98,8 +125,37 @@ def backfill_station(station: str, conn: MesonetSatelliteDB) -> NoReturn:
         backfill_isolated(station)
 
 
-# from dotenv import load_dotenv
-# import os
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser("Backfilll new station data.")
+    parser.add_argument(
+        '-s','--stations', nargs='+',
+         help='The stations to backfill. If more than one station is being backfilled, separate names with a space.',
+        required=True
+    )
+    args = parser.parse_args()
+    load_dotenv("./.env")
+    
+    try:
+        conn = MesonetSatelliteDB(
+            uri=os.getenv("Neo4jURI"),
+            user=os.getenv("Neo4jUser"),
+            password=os.getenv("Neo4jPassword"),
+        )
+    except ConfigurationError as e:
+        logger.exception(e)
+        logger.exception("Unable to connect to Neo4j DB.")
+
+    try:
+        session = Session(dot_env=True)
+    except AssertionError as e:
+        logger.exception(e)
+
+    try:
+        operational_update(conn=conn, session=session, backfill=True, stations=args.stations)
+    finally:
+        session.logout()
+        conn.close()
 
 # load_dotenv("../setup/.env")
 
