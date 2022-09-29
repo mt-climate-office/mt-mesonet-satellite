@@ -1,8 +1,10 @@
-from dataclasses import dataclass, field
-import requests
+import os
 import subprocess
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, List, Optional, Tuple
+
+import requests
 
 
 @dataclass
@@ -20,12 +22,14 @@ class Session:
     Attributes:
         username (Optional[str]): Earthdata username. If left as None, ~/.netrc will be used. Defaults to None.
         password (Optioanl[str]): Earthdata password. If left as None, ~/.netrc will be used. Defautls to None.
+        dot_env (Optional[bool]): Whether to load Earthdata user and password from your system's environment.
         creds (Dict[str, str]): Credentaials for a session provided after login.
         token (str): Token necessary to use AppEEARS API. Created upon login.
     """
 
     username: Optional[str] = None
     password: Optional[str] = None
+    dot_env: Optional[bool] = True
     creds: Dict[str, str] = field(init=False)
     token: str = field(init=False)
 
@@ -34,12 +38,22 @@ class Session:
         self.token = self.creds["token"]
 
     @staticmethod
-    def _get_auth() -> Tuple[str]:
+    def _get_auth(dot_env: bool) -> Tuple[str]:
         """Get AppEEARS authentication informatiion from a ~/.netrc file.
 
         Returns:
             Tuple[str]: A tuple with (username, password) stored in it.
         """
+
+        if dot_env:
+            username = os.getenv("EarthdataLogin")
+            password = os.getenv("EarthdataPassword")
+            return username, password
+
+        assert (
+            Path.home() / ".netrc"
+        ).exists(), "If you don't provide an Earthdata Search login, you must have your login credentials stored in the ~/.netrc file."
+
         username = (
             subprocess.check_output(
                 """awk '/login/ { print $2 }' ~/.netrc""", shell=True
@@ -72,10 +86,7 @@ class Session:
             Dict[str, str]: A dictionary containing authentication token to use the API.
         """
         if not username or not password:
-            assert (
-                Path.home() / ".netrc"
-            ).exists(), "If you don't provide an Earthdata Search login, you must have your login credentials stored in the ~/.netrc file."
-            username, password = self._get_auth()
+            username, password = self._get_auth(self.dot_env)
         response = requests.post(
             "https://appeears.earthdatacloud.nasa.gov/api/login",
             auth=(username, password),

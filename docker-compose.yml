@@ -1,33 +1,46 @@
 version: '3.9'
 
-networks:
-    web:
-        external: true
-
 services:
     neo4j:
         container_name: neo4j
-        restart: always
-        image: neo4j:latest
+        restart: on-failure
+        build: ./neo4j
         # user: "1001:1001"
         volumes:
-          - $HOME/data/neo4j/data:/data 
-          - $HOME/data/neo4j/logs:/logs 
-          - $HOME/data/neo4j/import:/var/lib/neo4j/import 
-          - $HOME/data/neo4j/plugins:/plugins 
+          - /neo4j/data:/data 
+          - /neo4j/logs:/logs 
+          - /neo4j/import:/var/lib/neo4j/import 
+          - /neo4j/plugins:/plugins
+          - /neo4j/dumps:/dumps
         ports:
           - "7474:7474"
           - "7687:7687"
-        environment:
-          - NEO4J_AUTH=neo4j/test
+        env_file:
+          - .env
         networks:
-            - web
+          - db_comm
 
-    # mms:
-    #     container_name: mms
-    #     stdin_open: true # docker run -i
-    #     tty: true # docker run -t
-    #     restart: always
-    #     build: .
-    #     networks:
-    #         - web
+    update:
+        container_name: update
+        restart: always
+        build:
+          context: ./ 
+          dockerfile: ./update/Dockerfile
+        env_file:
+          - .env
+        networks:
+          - db_comm
+
+networks:
+  db_comm:
+    driver: bridge
+    ipam:
+      driver: default
+
+# volumes:
+#     db-backups:
+#       driver: local
+#       driver_opts:
+#         type: nfs
+#         o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
+#         device: $nfsPath

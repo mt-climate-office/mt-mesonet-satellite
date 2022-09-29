@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import requests
 
 from .Geom import Point, Poly
-from typing import Any, Dict, List, Optional, Union
-import requests
-from pathlib import Path
 
 
 class PendingTaskError(Exception):
@@ -143,6 +145,15 @@ class Task:
             for f in f_list:
                 self._write_file(f, dirname, token)
 
+    def delete(self, token):
+        response = requests.delete(
+            "https://appeears.earthdatacloud.nasa.gov/api/task/{0}".format(
+                self.task_id
+            ),
+            headers={"Authorization": "Bearer {0}".format(token)},
+        )
+        return response.status_code
+
 
 @dataclass
 class Submit(Task):
@@ -197,7 +208,10 @@ class Submit(Task):
                 self.start_year and self.end_year
             ), "If recurring is set to true, start_year and end_year must also be valid years."
             dates.update(
-                {self.recurring: True, "yearRange": [self.start_year, self.end_year]}
+                {
+                    self.recurring: True,
+                    "yearRange": [self.start_year, self.end_year],
+                }
             )
 
         task = {

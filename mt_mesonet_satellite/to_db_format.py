@@ -1,8 +1,10 @@
 import argparse
-import pandas as pd
 from pathlib import Path
-from typing import Union, Optional
+from typing import Optional, Union
+
 import numpy as np
+import pandas as pd
+from loguru import logger
 
 
 def to_db_format(
@@ -44,6 +46,10 @@ def to_db_format(
                 "PET_500m": "PET",
                 "_500m_16_days_EVI": "EVI",
                 "_500m_16_days_NDVI": "NDVI",
+                "_500_m_16_days_EVI": "EVI",
+                "_500_m_16_days_NDVI": "NDVI",
+                "EVAPOTRANSPIRATION_ALEXI_ETdaily": "ET",
+                "EVAPOTRANSPIRATION_PT_JPL_ETdaily": "ET",
             }
         }
     )
@@ -56,13 +62,42 @@ def to_db_format(
         + "_"
         + dat.element
     )
-    dat = dat.assign(units=dat.units.fillna('unitless'))
-    dat = dat.assign(value = dat.value.fillna(-9999))
-    print("Data succesfully reformatted.")
-    dat = dat.drop_duplicates()
-    dat = dat.assign(value = np.where((dat.platform != "SPL4CMDL.006") & (dat.element == 'GPP'), (dat.value * 1000)/8, dat.value))
-    dat = dat.assign(units = np.where((dat.platform != "SPL4CMDL.006") & (dat.element == 'GPP'), "gCm^-2day^-1", dat.units))
+    dat = dat.assign(units=dat.units.fillna("unitless"))
+    dat = dat.assign(value=dat.value.fillna(-9999))
+    dat = dat.assign(
+        units=np.where(
+            (dat.units == "EVI") | (dat.units == "NDVI"), "unitless", dat.units
+        )
+    )
+    dat = dat.assign(
+        value=np.where(
+            (dat.platform != "SPL4CMDL.006") & (dat.element == "GPP"),
+            (dat.value * 1000) / 8,
+            dat.value,
+        )
+    )
+    dat = dat.assign(
+        value=np.where(
+            (dat.element == "ET") & (dat.platform != "ECO3ETALEXI.001"),
+            dat.value / 8,
+            dat.value,
+        )
+    )
+    dat = dat.assign(value=np.where(dat.element == "PET", dat.value / 8, dat.value))
+    dat = dat.assign(
+        units=np.where(
+            (dat.platform != "SPL4CMDL.006") & (dat.element == "GPP"),
+            "gCm^-2day^-1",
+            dat.units,
+        )
+    )
 
+    dat = dat[dat["element"] != "Geophysical_Data_sm_rootzone_pctl"]
+    dat = dat[dat["element"] != "_500_m_16_days_EVI2"]
+
+    dat = dat.drop_duplicates()
+    dat = dat.reset_index(drop=True)
+    logger.info("Data successfully reformatted.")
     if write:
         if split:
             out_name = Path(f).stem if not out_name else out_name
@@ -83,7 +118,10 @@ if __name__ == "__main__":
         "-f", "--file", type=Path, help="master_db.csv file to reformat"
     )
     parser.add_argument(
-        "-od", "--outdir", type=Path, help="Neo4j directory to save dataframe to."
+        "-od",
+        "--outdir",
+        type=Path,
+        help="Neo4j directory to save dataframe to.",
     )
     parser.add_argument(
         "-on",

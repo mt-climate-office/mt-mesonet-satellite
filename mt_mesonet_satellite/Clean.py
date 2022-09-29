@@ -1,10 +1,13 @@
 from dataclasses import dataclass, field
-import pandas as pd
-import numpy as np
 from pathlib import Path
-from typing import Union, Dict, Optional
-from .Product import Product, Layer
+from typing import Dict, Optional, Union
+
 import janitor
+import numpy as np
+import pandas as pd
+from loguru import logger
+
+from .Product import Layer, Product
 
 
 @dataclass
@@ -53,6 +56,7 @@ class Cleaner:
         Returns:
             pd.DataFrame: DataFrame of cleaned data.
         """
+        logger.info("Cleaning {f}", f=self.f)
         dat = self.raw[["ID", "Date"] + list(self.layers.keys())]
 
         for k, v in self.layers.items():
@@ -134,7 +138,6 @@ def clean_all(
     dirname = dirname if isinstance(dirname, Path) else Path(dirname)
     dfs = []
     for f in dirname.iterdir():
-        print(f)
         subdaily = "SPL4SMGP" in f.stem
         c = Cleaner(f, is_subdaily=subdaily)
         tmp = c.clean()

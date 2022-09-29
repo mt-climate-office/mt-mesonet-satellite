@@ -1,2 +1,0 @@
-from mt_mesonet_satellite import operational_update
-operational_update()
