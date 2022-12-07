@@ -4,7 +4,6 @@ import os
 import tempfile
 
 from dotenv import load_dotenv
-
 from mt_mesonet_satellite import (
     MesonetSatelliteDB,
     Point,

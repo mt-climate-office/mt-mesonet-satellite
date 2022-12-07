@@ -1,18 +1,18 @@
 #!/usr/local/bin/python
 
-import os
 import argparse
+import datetime as dt
+import os
+import sys
 from pathlib import Path
+from typing import List, NoReturn
 
+import numpy as np
+import pandas as pd
 from dotenv import load_dotenv
 from loguru import logger
+from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
 from neo4j.exceptions import ConfigurationError
-import sys
-from typing import NoReturn
-import pandas as pd
-import datetime as dt
-
-from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update, Point
 
 load_dotenv("/setup/.env")
 
@@ -91,51 +91,23 @@ def backfill_collocated(
     conn.post(dat)
 
 
-def backfill_isolated(station):
-    raise NotImplementedError("This method hasn't been implemented yet :(.")
-
-
-def backfill_station(station: str, conn: MesonetSatelliteDB) -> NoReturn:
-    """Determine if a station is collocated and backfill accordingly.
-
-    Args:
-        station (str): The name of the station to backfill.
-        conn (MesonetSatelliteDB): Connection to Neo4j database.
-
-    Returns:
-        NoReturn: Nothing returned. Data are backfilled into the database.
-    """
-    # Get list of stations from the API.
-    stations = pd.read_csv("https://mesonet.climate.umt.edu/api/v2/stations?type=csv")
-
-    # Determine if the station is collocated.
-    station_loc = stations[stations["station"] == station]
-    station_loc = stations[
-        (stations["longitude"] == station_loc["longitude"].values[0])
-        & (stations["latitude"] == station_loc["latitude"].values[0])
-    ]
-    collocated_station = station_loc[station_loc["station"] != station][
-        "station"
-    ].values[0]
-
-    # Backfill accordingly.
-    if station_loc.shape[0] == 2:
-        backfill_collocated(station, collocated_station, conn)
-    else:
-        backfill_isolated(station)
+def backfill_isolated(stations: List[str], session: Session, conn: MesonetSatelliteDB):
+    operational_update(conn=conn, session=session, backfill=True, stations=stations)
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Backfilll new station data.")
     parser.add_argument(
-        '-s','--stations', nargs='+',
-         help='The stations to backfill. If more than one station is being backfilled, separate names with a space.',
-        required=True
+        "-s",
+        "--stations",
+        nargs="+",
+        help="The stations to backfill. If more than one station is being backfilled, separate names with a space.",
+        required=True,
     )
     args = parser.parse_args()
     load_dotenv("./.env")
-    
+
     try:
         conn = MesonetSatelliteDB(
             uri=os.getenv("Neo4jURI"),
@@ -152,21 +124,38 @@ if __name__ == "__main__":
         logger.exception(e)
 
     try:
-        operational_update(conn=conn, session=session, backfill=True, stations=args.stations)
+        station_df = pd.read_csv(
+            "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
+        )
+
+        collocated = station_df.groupby(["latitude", "longitude"])
+        collocated = collocated.agg(
+            {
+                "station": lambda x: np.unique(x).tolist(),
+            }
+        ).reset_index()
+
+        collocated = collocated[collocated.station.str.len() >= 2]
+        collocated_d = {}
+        isolated_l = []
+
+        for station in args.stations:
+            tmp = collocated[collocated["station"].apply(lambda y: station in y)]
+            if tmp.shape[0] == 1:
+                collocated_d[station] = tmp.station.to_list()[0]
+            else:
+                isolated_l.append(station)
+
+        if collocated_d:
+            for station, pair in collocated_d.items():
+                other = [x for x in pair if x != station][0]
+                print(f"Collocated: {station}\nwith: {other}")
+                backfill_collocated(station=station, collocated=other, conn=conn)
+
+        if isolated_l:
+            print(f"Isolated: {isolated_l}")
+            backfill_isolated(stations=isolated_l, session=session, conn=conn)
+
     finally:
         session.logout()
         conn.close()
-
-# load_dotenv("../setup/.env")
-
-# conn = MesonetSatelliteDB(
-#     uri=os.getenv("Neo4jURI"),
-#     user=os.getenv("Neo4jUser"),
-#     password=os.getenv("Neo4jPassword"),
-# )
-
-# backfill_station("aceoilmo", conn)
-# backfill_station("acecoffe", conn)
-# backfill_station("acetosto", conn)
-
-# conn.close()

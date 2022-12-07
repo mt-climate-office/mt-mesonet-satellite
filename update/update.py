@@ -6,9 +6,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
-from neo4j.exceptions import ConfigurationError
-
 from mt_mesonet_satellite import MesonetSatelliteDB, Session, operational_update
+from neo4j.exceptions import ConfigurationError
 
 # from mt_mesonet_satellite import Task, Submit, clean_all, to_db_format, Product, Point
 

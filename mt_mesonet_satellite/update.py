@@ -152,7 +152,7 @@ def update_db(dirname: Union[Path, str], conn=MesonetSatelliteDB):
 
 
 @logger.catch
-def operational_update(conn, session, backfill: bool=False, stations: Optional[List]=None):
+def operational_update(conn, session, backfill: bool=False, stations: Optional[List[str]]=None):
 
     with tempfile.TemporaryDirectory() as dirname:
         tasks = start_missing_tasks(conn=conn, session=session, start_now=True, backfill=backfill, stations=stations)
