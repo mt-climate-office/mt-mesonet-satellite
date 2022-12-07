@@ -11,7 +11,8 @@ services:
           - /neo4j/logs:/logs 
           - /neo4j/import:/var/lib/neo4j/import 
           - /neo4j/plugins:/plugins
-          - db-backups:/dumps
+          # - db-backups:/dumps
+          - /neo4j/dumps:/dumps
         ports:
           - "7474:7474"
           - "7687:7687"
