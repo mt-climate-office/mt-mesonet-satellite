@@ -133,3 +133,4 @@ dmypy.json
 # Ignore log file. 
 log.txt
 .DS_Store
+.vscode/launch.json
