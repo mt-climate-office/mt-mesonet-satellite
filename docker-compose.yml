@@ -7,12 +7,13 @@ services:
         build: ./neo4j
         # user: "1001:1001"
         volumes:
-          - /neo4j/data:/data 
-          - /neo4j/logs:/logs 
-          - /neo4j/import:/var/lib/neo4j/import 
-          - /neo4j/plugins:/plugins
+          # - /neo4j/data:/data 
+          # - /neo4j/logs:/logs 
+          # - /neo4j/import:/var/lib/neo4j/import 
+          # - /neo4j/plugins:/plugins
           # - db-backups:/dumps
-          - /neo4j/dumps:/dumps
+          - neo4j-dumps:/dumps
+          - neo4j-data:/data
         ports:
           - "7474:7474"
           - "7687:7687"
@@ -39,9 +40,10 @@ networks:
       driver: default
 
 volumes:
-    db-backups:
+    neo4j-dumps:
       driver: local
       driver_opts:
         type: nfs
         o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
         device: $nfsPath
+    neoj4-data:
