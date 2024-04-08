@@ -46,4 +46,4 @@ volumes:
         type: nfs
         o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
         device: $nfsPath
-    neoj4-data:
+    neo4j-data:
