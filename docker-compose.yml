@@ -45,5 +45,5 @@ volumes:
       driver_opts:
         type: nfs
         o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
-        device: $nfsPath
+        device: "$nfsPath"
     neo4j-data:
