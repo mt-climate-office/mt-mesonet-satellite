@@ -40,10 +40,10 @@ networks:
       driver: default
 
 volumes:
-    neo4j-dumps:
-      driver: local
-      driver_opts:
-        type: nfs
-        o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
-        device: "$nfsPath"
     neo4j-data:
+    neo4j-dumps:
+      # driver: local
+      # driver_opts:
+      #   type: nfs
+      #   o: nfsvers=4,addr=${nfsIP},nolock,soft,rw
+      #   device: "$nfsPath"
