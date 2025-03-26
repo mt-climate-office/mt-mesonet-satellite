@@ -11,14 +11,13 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"
 requests = "^2.27.1"
-pandas = "^1.4.2"
+pandas = ">=2.0.0,<3.0.0"
 numpy = "^1.22.4"
 geopandas = "^0.10.2"
 pyjanitor = "^0.23.1"
 neo4j = "^4.4.4"
 neo4j-driver = "^4.4.4"
-python-dotenv = "^0.20.0"
-flake8 = "^4.0.1"
+python-dotenv = ">=1.0.0,<2.0.0"
 loguru = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
