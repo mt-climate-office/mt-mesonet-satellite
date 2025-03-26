@@ -59,5 +59,6 @@ class Product:
             )
         )
         layer_response = response.json()
-
+        if response.status_code != 200:
+            return None
         return {k: Layer.from_dict(v) for k, v in layer_response.items()}

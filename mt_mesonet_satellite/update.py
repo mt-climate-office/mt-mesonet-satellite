@@ -51,6 +51,7 @@ def start_missing_tasks(
     missing = find_missing_data(conn, backfill=backfill)
     products = list(set(missing["platform"]))
     products = [Product(x) for x in products]
+    products = [x for x in products if x.layers is not None]
 
     geom = Point.from_mesonet(*stations) if stations else Point.from_mesonet()
     
