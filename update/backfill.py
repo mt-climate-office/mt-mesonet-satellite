@@ -5,7 +5,8 @@ import datetime as dt
 import os
 import sys
 from pathlib import Path
-from typing import List, NoReturn
+from typing import List
+import json
 
 import numpy as np
 import pandas as pd
@@ -40,16 +41,40 @@ ELEMENTS = [
     "GPP",
     "LAI",
     "Fpar",
-    "sm_surface_wetness",
-    "sm_surface",
-    "sm_rootzone_wetness",
-    "sm_rootzone",
 ]
 
+def convert_date_to_seconds(d: dt.date | dt.datetime | str) -> int:
+    if isinstance(d, str):
+        d = dt.datetime.strptime(d, "%Y-%m-%d")
+    if isinstance(d, dt.date):
+        d = dt.datetime.combine(d, dt.time.min)
+    
+    return int((d - dt.datetime(1970, 1, 1)).total_seconds())
+
+
+def get_earliest_record(conn: MesonetSatelliteDB):
+    stations = pd.read_csv(
+        "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
+    )
+
+    date_records = {}
+    for station in stations['station'].to_list():
+        print(f"Processing {station}...")
+        try:
+            _ = conn.query(station, convert_date_to_seconds("2020-01-01"),
+                    convert_date_to_seconds("2020-03-01"), "NDVI")
+            d = dt.date(2000, 1, 1)
+        except ValueError:
+            d = dt.date.today()
+
+        date_records[station] = d
+
+
+    conn.query()
 
 def backfill_collocated(
     station: str, collocated: str, conn: MesonetSatelliteDB
-) -> NoReturn:
+) -> None:
     """Backfill a collocated station with satellite data from the collocated station.
 
     Args:
