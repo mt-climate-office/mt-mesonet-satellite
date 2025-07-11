@@ -5,7 +5,7 @@ import datetime as dt
 import os
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Union
 import json
 
 import numpy as np
@@ -43,7 +43,7 @@ ELEMENTS = [
     "Fpar",
 ]
 
-def convert_date_to_seconds(d: dt.date | dt.datetime | str) -> int:
+def convert_date_to_seconds(d: Union[dt.date, dt.datetime, str]) -> int:
     if isinstance(d, str):
         d = dt.datetime.strptime(d, "%Y-%m-%d")
     if isinstance(d, dt.date):
