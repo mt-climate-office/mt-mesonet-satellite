@@ -60,14 +60,20 @@ def get_earliest_record(conn: MesonetSatelliteDB):
     date_records = {}
     for station in stations['station'].to_list():
         print(f"Processing {station}...")
-        try:
-            _ = conn.query(station, convert_date_to_seconds("2020-01-01"),
-                    convert_date_to_seconds("2020-03-01"), "NDVI")
-            d = dt.date(2000, 1, 1)
-        except ValueError:
+        out = conn.query(station, convert_date_to_seconds("2020-01-01"),
+                convert_date_to_seconds("2020-03-01"), "NDVI")
+        if len(out) == 0:
             d = dt.date.today()
+        else:
+            d = dt.date(2000, 1, 1)
 
         date_records[station] = d
+    
+    for k, v in date_records.items():
+        date_records[k] = v.strftime("%Y-%m-%d")
+    
+    with open("/home/cbrust/git/mt-mesonet-satellite/update/station_record_dates.json", "w") as f:
+        json.dump(date_records, f)
 
 def backfill_collocated(
     station: str, collocated: str, conn: MesonetSatelliteDB
