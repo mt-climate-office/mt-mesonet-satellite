@@ -69,9 +69,6 @@ def get_earliest_record(conn: MesonetSatelliteDB):
 
         date_records[station] = d
 
-
-    conn.query()
-
 def backfill_collocated(
     station: str, collocated: str, conn: MesonetSatelliteDB
 ) -> None:
@@ -120,17 +117,118 @@ def backfill_isolated(stations: List[str], session: Session, conn: MesonetSatell
     operational_update(conn=conn, session=session, backfill=True, stations=stations)
 
 
+def execute_backfill(stations: List[str], session: Session, conn: MesonetSatelliteDB):
+    """Execute the backfill logic for a list of stations.
+    
+    Args:
+        stations (List[str]): List of station names to backfill.
+        session (Session): Session object for API access.
+        conn (MesonetSatelliteDB): Connection to the Neo4j database.
+    """
+    station_df = pd.read_csv(
+        "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
+    )
+
+    collocated = station_df.groupby(["latitude", "longitude"])
+    collocated = collocated.agg(
+        {
+            "station": lambda x: np.unique(x).tolist(),
+        }
+    ).reset_index()
+
+    collocated = collocated[collocated.station.str.len() >= 2]
+    collocated_d = {}
+    isolated_l = []
+
+    for station in stations:
+        tmp = collocated[collocated["station"].apply(lambda y: station in y)]
+        if tmp.shape[0] == 1:
+            collocated_d[station] = tmp.station.to_list()[0]
+        else:
+            isolated_l.append(station)
+
+    if collocated_d:
+        for station, pair in collocated_d.items():
+            other = [x for x in pair if x != station][0]
+            print(f"Collocated: {station}\nwith: {other}")
+            backfill_collocated(station=station, collocated=other, conn=conn)
+
+    if isolated_l:
+        print(f"Isolated: {isolated_l}")
+        backfill_isolated(stations=isolated_l, session=session, conn=conn)
+
+
+def check_and_backfill(session: Session, conn: MesonetSatelliteDB):
+    """Check station record dates and backfill stations that need it.
+    
+    Args:
+        session (Session): Session object for API access.
+        conn (MesonetSatelliteDB): Connection to the Neo4j database.
+    """
+    # Load station record dates
+    record_dates_path = Path("/setup/update/station_record_dates.json")
+    if record_dates_path.exists():
+        with open(record_dates_path, 'r') as f:
+            station_record_dates = json.load(f)
+    else:
+        logger.warning(f"Station record dates file not found at {record_dates_path}")
+        station_record_dates = {}
+    
+    # Get current stations from API
+    station_df = pd.read_csv(
+        "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
+    )
+    
+    stations_to_backfill = []
+    cutoff_date = dt.date(2020, 1, 1)
+    
+    for station in station_df['station'].to_list():
+        needs_backfill = False
+        
+        if station not in station_record_dates:
+            logger.info(f"Station {station} not found in record dates, adding to backfill list")
+            needs_backfill = True
+        else:
+            # Parse the date from the record
+            try:
+                station_date = dt.datetime.strptime(station_record_dates[station], "%Y-%m-%d").date()
+                if station_date > cutoff_date:
+                    logger.info(f"Station {station} date {station_date} > {cutoff_date}, adding to backfill list")
+                    needs_backfill = True
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not parse date for station {station}: {e}, adding to backfill list")
+                needs_backfill = True
+        
+        if needs_backfill:
+            stations_to_backfill.append(station)
+    
+    if stations_to_backfill:
+        logger.info(f"Found {len(stations_to_backfill)} stations needing backfill: {stations_to_backfill}")
+        execute_backfill(stations_to_backfill, session, conn)
+    else:
+        logger.info("No stations need backfilling")
+
+
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser("Backfilll new station data.")
+    parser = argparse.ArgumentParser("Backfill new station data.")
     parser.add_argument(
         "-s",
         "--stations",
         nargs="+",
         help="The stations to backfill. If more than one station is being backfilled, separate names with a space.",
-        required=True,
+    )
+    parser.add_argument(
+        "--check-backfill",
+        action="store_true",
+        help="Check station record dates and backfill stations with dates > 2020-01-01 or missing records",
     )
     args = parser.parse_args()
+    
+    # Validate arguments
+    if not args.check_backfill and not args.stations:
+        parser.error("Either --stations or --check-backfill must be specified")
+    
     load_dotenv("./.env")
 
     try:
@@ -149,37 +247,10 @@ if __name__ == "__main__":
         logger.exception(e)
 
     try:
-        station_df = pd.read_csv(
-            "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
-        )
-
-        collocated = station_df.groupby(["latitude", "longitude"])
-        collocated = collocated.agg(
-            {
-                "station": lambda x: np.unique(x).tolist(),
-            }
-        ).reset_index()
-
-        collocated = collocated[collocated.station.str.len() >= 2]
-        collocated_d = {}
-        isolated_l = []
-
-        for station in args.stations:
-            tmp = collocated[collocated["station"].apply(lambda y: station in y)]
-            if tmp.shape[0] == 1:
-                collocated_d[station] = tmp.station.to_list()[0]
-            else:
-                isolated_l.append(station)
-
-        if collocated_d:
-            for station, pair in collocated_d.items():
-                other = [x for x in pair if x != station][0]
-                print(f"Collocated: {station}\nwith: {other}")
-                backfill_collocated(station=station, collocated=other, conn=conn)
-
-        if isolated_l:
-            print(f"Isolated: {isolated_l}")
-            backfill_isolated(stations=isolated_l, session=session, conn=conn)
+        if args.check_backfill:
+            check_and_backfill(session, conn)
+        else:
+            execute_backfill(args.stations, session, conn)
 
     finally:
         session.logout()
