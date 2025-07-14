@@ -18,7 +18,7 @@ COPY ./pyproject.toml ./poetry.lock* ./.env /setup/
 COPY ./mt_mesonet_satellite /setup/mt_mesonet_satellite
 
 # Install packages.
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-root
 RUN pip install .
 
 # Copy update scripts
