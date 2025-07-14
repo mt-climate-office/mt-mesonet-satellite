@@ -6,7 +6,6 @@ import os
 import sys
 from pathlib import Path
 from typing import List, Union
-import json
 
 import numpy as np
 import pandas as pd
@@ -52,7 +51,7 @@ def convert_date_to_seconds(d: Union[dt.date, dt.datetime, str]) -> int:
     return int((d - dt.datetime(1970, 1, 1)).total_seconds())
 
 
-def get_earliest_record(conn: MesonetSatelliteDB):
+def get_earliest_record(conn: MesonetSatelliteDB) -> None:
     stations = pd.read_csv(
         "https://mesonet.climate.umt.edu/api/v2/stations?type=csv"
     )
@@ -72,8 +71,7 @@ def get_earliest_record(conn: MesonetSatelliteDB):
     for k, v in date_records.items():
         date_records[k] = v.strftime("%Y-%m-%d")
     
-    with open("/home/cbrust/git/mt-mesonet-satellite/update/station_record_dates.json", "w") as f:
-        json.dump(date_records, f)
+    return date_records
 
 def backfill_collocated(
     station: str, collocated: str, conn: MesonetSatelliteDB
@@ -172,13 +170,7 @@ def check_and_backfill(session: Session, conn: MesonetSatelliteDB):
         conn (MesonetSatelliteDB): Connection to the Neo4j database.
     """
     # Load station record dates
-    record_dates_path = Path("/setup/update/station_record_dates.json")
-    if record_dates_path.exists():
-        with open(record_dates_path, 'r') as f:
-            station_record_dates = json.load(f)
-    else:
-        logger.warning(f"Station record dates file not found at {record_dates_path}")
-        station_record_dates = {}
+    station_record_dates = get_earliest_record(conn)
     
     # Get current stations from API
     station_df = pd.read_csv(
