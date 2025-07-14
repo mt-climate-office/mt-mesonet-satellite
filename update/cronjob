@@ -1,4 +1,5 @@
 # must be ended with a new line "LF" (Unix) and not "CRLF" (Windows)
 # 14 UTC = 8 Mountain Time
 0 13 * * * /setup/update/update.py
+0 18 * * * /setup/update/backfill.py --check-backfill
 # An empty line is required at the end of this file for a valid cron file.

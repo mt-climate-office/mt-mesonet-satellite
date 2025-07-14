@@ -5,6 +5,9 @@ RUN apt-get update && \
 
 # COPY ./cronjob /etc/cron.d/cronjob
 COPY ./backup.sh /opt/backup.sh
+COPY ./entrypoint.sh /opt/entrypoint.sh
+
+RUN chmod a+x /opt/entrypoint.sh
 
 RUN mkdir -p /dumps/neo4j
 
@@ -22,4 +25,4 @@ RUN echo '0 6 * * * root bash -c "source $HOME/env.log; source /opt/backup.sh"' 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log
 
-CMD tail -f /var/log/cron.log
+ENTRYPOINT [ "/opt/entrypoint.sh" ]

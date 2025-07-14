@@ -51,6 +51,7 @@ def start_missing_tasks(
     missing = find_missing_data(conn, backfill=backfill)
     products = list(set(missing["platform"]))
     products = [Product(x) for x in products]
+    products = [x for x in products if x.layers is not None]
 
     geom = Point.from_mesonet(*stations) if stations else Point.from_mesonet()
     
@@ -74,11 +75,10 @@ def start_missing_tasks(
         date = sub["date"][0].to_pydatetime().date()
         today = dt.date.today()
 
-        start_date = str(date)
-        end_date = str(today)
-        date = str(date).replace("-", "")
-        today = str(today).replace("-", "")
-        task_name = f"{p.product}_{date}_{today}"
+        start_date = date.strftime("%m-%d-%Y")
+        end_date = today.strftime("%m-%d-%Y")
+
+        task_name = f"{p.product}_{start_date.replace('-', '')}_{end_date.replace('-', '')}"
         task = Submit(
             name=task_name,
             products=[p.product] * len(layers),
