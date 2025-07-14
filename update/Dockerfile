@@ -32,6 +32,7 @@ RUN chmod 0644 /etc/cron.d/cronjob
 
 # Make update executable
 RUN chmod 0744 /setup/update/update.py
+RUN chmod 0744 /setup/update/backfill.py
 
 # Apply cron job
 RUN crontab /etc/cron.d/cronjob
